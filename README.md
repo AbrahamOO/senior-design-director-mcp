@@ -17,34 +17,40 @@ Rather than answering generic design questions, this server operates like a seni
 ## Features
 
 ### Project Discovery & Management
+
 - 15-question structured brief covering audience, positioning, narrative, CTAs, visual personality, content, technical requirements, and competitive landscape
 - Persistent file-based storage (`~/.senior-design-director-mcp/projects/`) — briefs survive server restarts
 - Full CRUD: create, retrieve, update, and delete project briefs
 - Standalone `get-discovery-questions` tool for manual brief preparation
 
 ### Color & Design Systems
+
 - Color palette generation derived from emotional tone, industry category, and audience psychology — returns primary palette plus two alternatives with full rationale
 - WCAG contrast ratio validation with AA/AAA pass/fail results
 - Complete design system output: display/body/accent typography, modular scale, 8px spacing system, responsive breakpoints, and motion tokens
 - Component library specifications (buttons, cards, navigation, forms, modals, and more)
 
 ### Content Architecture
+
 - Three-act narrative structure mapping scroll position to emotional journey (Problem → Transformation → Outcome)
 - Page structure recommendations tied to business objectives and conversion goals
 - Brand voice and copywriting guidelines derived from positioning and desired perception
 
 ### Accessibility
+
 - WCAG 2.1 AA compliance checking across color combinations, semantic HTML structure, form labels, heading hierarchy, ARIA attributes, and keyboard navigation
 - Scored report with severity-ranked issues (critical / serious / moderate / minor) and specific recommendations
 - Complete WCAG 2.1 AA checklist for implementation review
 
 ### Performance
+
 - Core Web Vitals analysis: LCP, FID, CLS with scored recommendations
 - Additional metrics: FCP, TTI, TBT
 - Performance budget guidelines for JS, CSS, images, fonts, and third-party scripts
 - Specific optimization actions ranked by priority (high / medium / low)
 
-### Design References (Resources)
+### Design References
+
 - Animation easing functions with timing guidance for micro, short, medium, and long durations
 - Responsive breakpoint system with mobile-first implementation patterns
 - Fluid typography scale with clamp() formulas and line-height rules
@@ -58,6 +64,7 @@ Rather than answering generic design questions, this server operates like a seni
 ## Installation
 
 ### Prerequisites
+
 - Node.js 18+
 - npm
 
@@ -95,6 +102,8 @@ A pre-filled config for this machine is included at [`Support/Claude/claude_desk
 
 ## Connect to Claude Code
 
+`~/.claude/settings.json` is the **global** config — adding it here makes the server available in every project, not just the current one.
+
 Add to `~/.claude/settings.json`:
 
 ```json
@@ -112,15 +121,16 @@ Add to `~/.claude/settings.json`:
 
 ## Tools Reference
 
-### Project Discovery
+### Project Discovery Tools
 
 #### `complete-project-discovery`
+
 Runs the full 15-question discovery process and saves a structured project brief. This is the entry point — all downstream tools read from this brief.
 
 **Required parameters:**
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
+| --- | --- | --- |
 | `projectName` | string | Project or company name |
 | `projectDescription` | string | What the project does (2–3 sentences) |
 | `industryCategory` | string | Industry category (e.g. SaaS, Wellness, E-commerce) |
@@ -131,7 +141,7 @@ Runs the full 15-question discovery process and saves a structured project brief
 **Optional parameters (fill in as many as possible for best results):**
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
+| --- | --- | --- |
 | `painPoints` | string | Problems the audience is trying to solve |
 | `objections` | string | Skepticism or objections they might have |
 | `fear` | string | Fears or concerns they have |
@@ -174,6 +184,7 @@ Runs the full 15-question discovery process and saves a structured project brief
 ---
 
 #### `get-project-brief`
+
 Retrieve a saved project brief.
 
 ```json
@@ -181,6 +192,7 @@ Retrieve a saved project brief.
 ```
 
 #### `list-projects`
+
 List all saved project briefs.
 
 ```json
@@ -188,6 +200,7 @@ List all saved project briefs.
 ```
 
 #### `delete-project`
+
 Delete a saved project brief.
 
 ```json
@@ -195,6 +208,7 @@ Delete a saved project brief.
 ```
 
 #### `update-project-brief`
+
 Update specific fields without replacing the entire brief.
 
 ```json
@@ -211,13 +225,15 @@ Update specific fields without replacing the entire brief.
 ```
 
 #### `get-discovery-questions`
+
 Returns all 15 discovery questions formatted for manual use or pre-brief preparation.
 
 ---
 
-### Color & Design Systems
+### Color & Design System Tools
 
 #### `generate-color-palette`
+
 Generates a color palette derived from the project brief — emotional tone, industry category, brand positioning, and any color constraints. Returns a primary palette plus two alternatives, each with hex values, RGB, usage guidance, psychological rationale, and usage guidelines.
 
 ```json
@@ -225,6 +241,7 @@ Generates a color palette derived from the project brief — emotional tone, ind
 ```
 
 #### `validate-color-contrast`
+
 Checks WCAG contrast ratio between any two hex colors. Returns the ratio, AA pass/fail for normal and large text, AAA pass/fail, and a recommendation.
 
 ```json
@@ -235,6 +252,7 @@ Checks WCAG contrast ratio between any two hex colors. Returns the ratio, AA pas
 ```
 
 **Returns:**
+
 ```json
 {
   "ratio": 18.6,
@@ -246,6 +264,7 @@ Checks WCAG contrast ratio between any two hex colors. Returns the ratio, AA pas
 ```
 
 #### `create-design-system`
+
 Generates a complete design system from the project brief:
 
 - **Typography** — display font, body font, optional accent font with weights and usage rules; full modular scale from xs to 5xl with line heights and use cases
@@ -259,6 +278,7 @@ Generates a complete design system from the project brief:
 ```
 
 #### `generate-component-library`
+
 Generates specifications for UI components styled to the design system: primary/secondary/ghost buttons with states and sizing, card variants, navigation with mobile menu, contact forms, hero sections, and feature grids.
 
 ```json
@@ -267,9 +287,10 @@ Generates specifications for UI components styled to the design system: primary/
 
 ---
 
-### Content Architecture
+### Content Architecture Tools
 
 #### `generate-content-architecture`
+
 Maps the project brief's narrative arc to a three-act scroll structure:
 
 - **Act I** — Problem space and emotional resonance (above the fold through ~33% scroll)
@@ -283,6 +304,7 @@ Returns section assignments, visual strategy, and emotional tone for each act, p
 ```
 
 #### `generate-copy-guidelines`
+
 Returns brand-specific copywriting guidelines derived from the project brief: headline formulas aligned with emotional tone, body copy voice and vocabulary, CTA copy patterns, things to always say and never say, and before/after copy examples.
 
 ```json
@@ -291,9 +313,10 @@ Returns brand-specific copywriting guidelines derived from the project brief: he
 
 ---
 
-### Accessibility
+### Accessibility Tools
 
 #### `check-accessibility`
+
 Analyzes a combination of color pairs, HTML structure, forms, heading hierarchy, ARIA usage, and keyboard navigation. Returns a scored report with severity-ranked issues and specific recommendations.
 
 ```json
@@ -313,6 +336,7 @@ Analyzes a combination of color pairs, HTML structure, forms, heading hierarchy,
 **Returns:** Score out of 100, issue list with severity, and WCAG 2.1 AA compliance summary (passes and failures).
 
 #### `get-accessibility-checklist`
+
 Returns a comprehensive WCAG 2.1 AA checklist organized by category: perceivable, operable, understandable, robust — with pass/fail criteria for each item.
 
 ```json
@@ -321,9 +345,10 @@ Returns a comprehensive WCAG 2.1 AA checklist organized by category: perceivable
 
 ---
 
-### Performance
+### Performance Tools
 
 #### `analyze-performance`
+
 Analyzes Core Web Vitals and supporting metrics. Returns an overall score out of 100 plus prioritized optimization recommendations for each metric that needs attention.
 
 ```json
@@ -340,7 +365,7 @@ Analyzes Core Web Vitals and supporting metrics. Returns an overall score out of
 ```
 
 | Parameter | Type | Values |
-|-----------|------|--------|
+| --- | --- | --- |
 | `lcp` | number | Largest Contentful Paint in ms |
 | `fid` | number | First Input Delay in ms |
 | `cls` | number | Cumulative Layout Shift score |
@@ -351,9 +376,11 @@ Analyzes Core Web Vitals and supporting metrics. Returns an overall score out of
 | `fontLoading` | string | `"blocking"` · `"swap"` · `"optional"` |
 
 #### `get-core-web-vitals-targets`
+
 Returns good/needs improvement/poor thresholds for LCP, FID, CLS, FCP, TTI, and TBT with descriptions and user impact explanations.
 
 #### `get-performance-budget`
+
 Returns recommended budgets for JS, CSS, images, fonts, third-party scripts, total page weight, HTTP requests, and LCP element — each with reasoning.
 
 ---
@@ -365,7 +392,7 @@ Resources are accessed via the MCP resource system and return ready-to-use conte
 ### Component Templates
 
 | URI | Description |
-|-----|-------------|
+| --- | --- |
 | `template://project-brief` | Markdown template for manual brief completion |
 | `template://component/button` | Accessible button HTML/CSS with variants and states |
 | `template://component/card` | Card component with hover animation |
@@ -375,10 +402,10 @@ Resources are accessed via the MCP resource system and return ready-to-use conte
 
 All component templates use CSS custom properties (`--color-primary`, `--color-secondary`, etc.) that map to the generated design system.
 
-### Design References
+### Design Reference Resources
 
 | URI | Description |
-|-----|-------------|
+| --- | --- |
 | `reference://easing` | CSS easing functions with timing ranges (micro 150ms → long 1800ms) and GPU performance rules |
 | `reference://breakpoints` | Standard breakpoints 320px–1600px with mobile-first implementation patterns |
 | `reference://typography-scale` | Major Third scale in CSS custom properties, fluid clamp() formulas, line-height and letter-spacing rules |
@@ -399,7 +426,7 @@ After discovery, use `get-project-brief` to review the saved brief. Use `update-
 
 ### Phase 2 — Design System
 
-```
+```text
 generate-color-palette       → Review primary palette and two alternatives
 validate-color-contrast      → Check every text/background combination
 create-design-system         → Full typography, spacing, breakpoints, motion
@@ -408,14 +435,14 @@ generate-component-library   → Component specs for implementation
 
 ### Phase 3 — Content Strategy
 
-```
+```text
 generate-content-architecture  → Three-act scroll narrative and page structure
 generate-copy-guidelines       → Voice, vocabulary, headline formulas, CTA copy
 ```
 
 ### Phase 4 — Quality Assurance
 
-```
+```text
 check-accessibility          → WCAG 2.1 AA compliance report
 get-accessibility-checklist  → Complete checklist for implementation review
 analyze-performance          → Core Web Vitals analysis
@@ -425,10 +452,10 @@ get-performance-budget       → Resource budgets for JS, CSS, images, fonts
 
 ### Phase 5 — Implementation
 
-```
-template://component/*       → Ready-to-use HTML/CSS components
-reference://easing           → Animation easing functions and timing
-reference://gsap-motion      → Full GSAP reference for scroll animations
+```text
+template://component/*        → Ready-to-use HTML/CSS components
+reference://easing            → Animation easing functions and timing
+reference://gsap-motion       → Full GSAP reference for scroll animations
 reference://webflow-animation → Webflow IX2 patterns and performance rules
 ```
 
@@ -438,7 +465,7 @@ reference://webflow-animation → Webflow IX2 patterns and performance rules
 
 Project briefs are stored as JSON files at:
 
-```
+```text
 ~/.senior-design-director-mcp/projects/{project-name}.json
 ```
 
@@ -452,24 +479,24 @@ Briefs are loaded into memory on server startup and written to disk on every sav
 
 ## Architecture
 
-```
+```text
 senior-design-director-mcp/
 ├── src/
-│   ├── index.ts                  # MCP server, tool/resource registration, request handlers
+│   ├── index.ts                   # MCP server, tool/resource registration, request handlers
 │   ├── types/
-│   │   └── index.ts              # ProjectBrief, ColorPalette, DesignSystem, AccessibilityReport, etc.
+│   │   └── index.ts               # ProjectBrief, ColorPalette, DesignSystem, AccessibilityReport, etc.
 │   ├── tools/
-│   │   ├── projectDiscovery.ts   # Discovery questions, brief builder, storage CRUD
-│   │   ├── colorPalette.ts       # Palette generation, contrast validation
-│   │   ├── designSystem.ts       # Typography, spacing, breakpoints, motion, component specs
+│   │   ├── projectDiscovery.ts    # Discovery questions, brief builder, storage CRUD
+│   │   ├── colorPalette.ts        # Palette generation, contrast validation
+│   │   ├── designSystem.ts        # Typography, spacing, breakpoints, motion, component specs
 │   │   ├── contentArchitecture.ts # Three-act structure, page architecture, copy guidelines
-│   │   ├── accessibility.ts      # WCAG compliance checker, checklist
-│   │   └── performance.ts        # Core Web Vitals analysis, budget guidelines
+│   │   ├── accessibility.ts       # WCAG compliance checker, checklist
+│   │   └── performance.ts         # Core Web Vitals analysis, budget guidelines
 │   ├── resources/
-│   │   └── templates.ts          # Component templates and design references
+│   │   └── templates.ts           # Component templates and design references
 │   └── utils/
-│       └── storage.ts            # File-based persistent storage for project briefs
-├── dist/                         # Compiled output (built from src/)
+│       └── storage.ts             # File-based persistent storage for project briefs
+├── dist/                          # Compiled output (built from src/)
 ├── package.json
 └── tsconfig.json
 ```
@@ -494,7 +521,7 @@ npm run watch
 npm run dev
 ```
 
-To test the server manually, pipe MCP JSON-RPC messages to it:
+To test the server manually, pipe an MCP JSON-RPC message to it:
 
 ```bash
 echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}' | node dist/index.js
