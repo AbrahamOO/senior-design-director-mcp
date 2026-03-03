@@ -1,43 +1,57 @@
 # Senior Design Director MCP Server
 
-A Model Context Protocol (MCP) server that provides professional web design guidance, project discovery workflows, design system generation, and accessibility/performance best practices based on world-class design studio standards.
+A Model Context Protocol (MCP) server that provides professional design guidance for web and premium mobile apps. Covers project discovery, platform-aware design system generation, component libraries, accessibility, performance, and curated reference material — grounded in world-class design studio standards.
 
 ## Features
 
 ### 🎯 Project Discovery
+
 - 15-question discovery process to capture project requirements
 - Structured project briefs with audience analysis, brand positioning, and narrative structure
-- Saves project context for consistent design decisions
+- `platform` field (`web` · `mobile-ios` · `mobile-android` · `mobile-cross-platform` · `both`) unlocks platform-specific outputs in every subsequent tool
 
 ### 🎨 Color & Design Systems
+
 - AI-powered color palette generation based on emotional tone, industry, and audience
-- Complete design system generation (typography, spacing, breakpoints, motion)
-- Component library specifications (buttons, cards, forms, navigation, etc.)
+- Platform-aware design system generation:
+  - **Web** — rem/px tokens, CSS custom properties, fluid clamp() typography
+  - **iOS** — pt tokens, Dynamic Type scale, safe-area insets, UISpringTimingParameters
+  - **Android** — dp/sp tokens, Material type scale, Material motion tokens
+  - **Cross-platform** — logical px, system font references
+- Component library specifications:
+  - **Web** — buttons, cards, forms, modals, navigation
+  - **iOS** — SwiftUI/UIKit equivalents respecting 44pt touch targets
+  - **Android** — Compose/Material 3 equivalents respecting 48dp touch targets
 - WCAG color contrast validation
 
 ### 📝 Content Architecture
+
 - Three-act storytelling framework for narrative-driven content
 - Page structure recommendations based on business objectives
 - Copywriting guidelines aligned with brand voice
 
 ### ♿ Accessibility
-- WCAG 2.1 AA compliance checking
-- Comprehensive accessibility checklist
-- Semantic HTML validation
-- Keyboard navigation and ARIA label guidance
+
+- WCAG 2.2 AA compliance checking for web
+- Mobile-specific checks: 44pt/48dp touch targets, Dynamic Type / sp scaling, VoiceOver / TalkBack labels, Reduce Motion support, OLED background halation detection
+- Comprehensive checklist including 17-item mobile category (iOS VoiceOver, Android TalkBack, Dynamic Type, Reduce Motion, Large Content Viewer, Focus Order, Color Independence)
 
 ### ⚡ Performance
-- Core Web Vitals analysis and recommendations
-- Performance budget guidelines
-- Optimization strategies for LCP, FID, CLS
-- Bundle size and caching recommendations
+
+- Core Web Vitals analysis (LCP, FID, CLS) with optimization recommendations
+- Mobile app performance analysis: cold/warm launch times, frame rate, memory usage, battery impact, asset density coverage
+- Benchmark tables for iOS and Android (good/needs improvement/poor thresholds)
+- Performance budget guidelines and caching recommendations
 
 ### 📚 Design Resources
+
 - Animation easing reference with timing guidelines
 - Responsive breakpoint systems
 - Typography scale systems
 - Component templates (HTML/CSS)
 - Color psychology reference
+- **iOS HIG** — navigation patterns, Dynamic Type scale, safe areas, SF Symbols, spring motion, semantic color tokens
+- **Material Design 3** — dynamic color roles, type scale, component specs, 4dp grid, motion easing + duration scale
 
 ## Installation
 
@@ -77,38 +91,46 @@ After updating the config, restart Claude Desktop.
 ### Project Discovery
 
 #### `complete-project-discovery`
-Complete the full 15-question discovery process and create a project brief.
+
+Complete the full 15-question discovery process and create a project brief. Include `platform` to enable mobile-specific outputs in every downstream tool.
 
 **Example:**
+
 ```javascript
 {
   "projectName": "Acme Design Studio",
   "projectDescription": "Boutique design studio helping SaaS startups build conversion-focused products",
   "industryCategory": "Design Agency",
+  "platform": "mobile-ios",
   "audienceRole": "Startup founders",
-  "emotionalTone": ["Sophisticated & Premium", "Warm & Human", "Bold & Rebellious"],
+  "emotionalTone": ["Sophisticated & Premium", "Warm & Human"],
   "primaryCTA": "Schedule a consultation call",
   // ... (see full schema in tool definition)
 }
 ```
 
 #### `get-project-brief`
+
 Retrieve a saved project brief by name.
 
 #### `list-projects`
+
 List all saved project briefs.
 
 #### `get-discovery-questions`
+
 Get the full list of 15 discovery questions for reference.
 
 ### Color & Design Systems
 
 #### `generate-color-palette`
+
 Generate color palette recommendations based on project brief analysis.
 
 **Returns:** Primary palette + 2 alternative palettes with rationale
 
 #### `validate-color-contrast`
+
 Check WCAG contrast ratio between foreground and background colors.
 
 ```javascript
@@ -119,23 +141,30 @@ Check WCAG contrast ratio between foreground and background colors.
 ```
 
 #### `create-design-system`
-Generate complete design system with typography, spacing, breakpoints, motion, and colors.
+
+Generate complete design system. When `platform` is set, emits native tokens (pt/dp), platform-appropriate type scale, and platform motion tokens.
 
 #### `generate-component-library`
-Generate component specifications based on design system.
+
+Generate component specifications based on design system. Returns SwiftUI/UIKit or Compose/Material 3 specs for mobile platforms.
 
 ### Content Architecture
 
 #### `generate-content-architecture`
+
 Create narrative-driven content structure using three-act storytelling.
 
 #### `generate-copy-guidelines`
+
 Generate copywriting guidelines based on brand voice and positioning.
 
 ### Accessibility
 
 #### `check-accessibility`
-Check accessibility compliance for colors, HTML, forms, etc.
+
+Check accessibility compliance for web and mobile. Pass `platform` to enable mobile-specific checks (touch targets, Dynamic Type, VoiceOver/TalkBack labels, Reduce Motion, OLED backgrounds).
+
+**Web example:**
 
 ```javascript
 {
@@ -150,13 +179,30 @@ Check accessibility compliance for colors, HTML, forms, etc.
 }
 ```
 
+**Mobile example:**
+
+```javascript
+{
+  "platform": "mobile-ios",
+  "colors": [{ "foreground": "#1C1C1E", "background": "#FFFFFF" }],
+  "touchTargetSize": 36,
+  "minimumTapSpacing": 4,
+  "dynamicTypeSupport": false,
+  "screenReaderLabels": true,
+  "reduceMotionSupport": false,
+  "oledBackground": "#000000"
+}
+```
+
 #### `get-accessibility-checklist`
-Get comprehensive WCAG 2.1 AA accessibility checklist.
+
+Get comprehensive checklist covering WCAG 2.2 AA + Apple Accessibility (VoiceOver, Dynamic Type, Reduce Motion, Large Content Viewer) + Android Accessibility (TalkBack, font scaling, animation scale) — organized by category with `must` / `should` / `recommended` priority levels.
 
 ### Performance
 
 #### `analyze-performance`
-Analyze performance metrics and get optimization recommendations.
+
+Analyze Core Web Vitals and get optimization recommendations.
 
 ```javascript
 {
@@ -172,54 +218,113 @@ Analyze performance metrics and get optimization recommendations.
 ```
 
 #### `get-core-web-vitals-targets`
-Get Core Web Vitals targets and thresholds.
+
+Get Core Web Vitals targets and thresholds (good/needs improvement/poor) for LCP, FID, CLS, FCP, TTI, and TBT.
 
 #### `get-performance-budget`
-Get recommended performance budget.
+
+Get recommended performance budget for JS, CSS, images, fonts, third-party scripts, and total page weight.
+
+#### `analyze-mobile-performance`
+
+Analyze mobile app performance metrics against platform benchmarks.
+
+```javascript
+{
+  "platform": "mobile-ios",
+  "coldLaunchMs": 820,
+  "warmLaunchMs": 550,
+  "frameRate": 48,
+  "memoryUsageMb": 180,
+  "batteryImpact": "high",
+  "assetDensities": ["@1x", "@2x"]
+}
+```
+
+**Returns:** Severity-ranked issues for each metric with platform-specific recommendations.
+
+#### `get-mobile-performance-targets`
+
+Get the full iOS and Android benchmark tables: cold/warm launch, frame rate, memory budgets, and asset density requirements.
 
 ## Available Resources
 
 Access design templates and references via the resource system:
 
 ### Templates
-- `template://project-brief` - Project brief template
-- `template://component/button` - Button component HTML/CSS
-- `template://component/card` - Card component HTML/CSS
-- `template://component/hero` - Hero section HTML/CSS
-- `template://component/navigation` - Navigation HTML/CSS
-- `template://component/form` - Form component HTML/CSS
+
+- `template://project-brief` — Project brief template
+- `template://component/button` — Button component HTML/CSS
+- `template://component/card` — Card component HTML/CSS
+- `template://component/hero` — Hero section HTML/CSS
+- `template://component/navigation` — Navigation HTML/CSS
+- `template://component/form` — Form component HTML/CSS
 
 ### References
-- `reference://easing` - Animation easing functions
-- `reference://breakpoints` - Responsive breakpoints
-- `reference://typography-scale` - Typography systems
-- `reference://spacing` - 8px spacing system
-- `reference://color-psychology` - Color psychology guide
+
+- `reference://easing` — CSS easing functions with timing ranges (micro 150ms → long 1800ms)
+- `reference://breakpoints` — Standard breakpoints 320px–1600px with mobile-first patterns
+- `reference://typography-scale` — Major Third scale in CSS custom properties, fluid clamp() formulas
+- `reference://spacing` — 8px base unit scale from 4px to 128px
+- `reference://color-psychology` — Color psychology by hue family and industry
+- `reference://webflow-animation` — Webflow IX2 trigger types, scroll reveal, stagger, scrub patterns
+- `reference://gsap-motion` — GSAP core API, timeline sequencing, ScrollTrigger, stagger, React useGSAP
+- `reference://ios-hig` — Apple HIG: navigation patterns, Dynamic Type scale, safe areas, SF Symbols, spring motion, semantic color tokens
+- `reference://material-design` — Material Design 3: dynamic color roles, type scale, component specs, 4dp grid, motion easing + duration scale
 
 ## Example Workflow
 
-1. **Start with Project Discovery**
-```
-Use complete-project-discovery to create a comprehensive project brief
+### Step 1 — Project Discovery
+
+```text
+Use complete-project-discovery (include "platform" for mobile projects)
 ```
 
-2. **Generate Design System**
-```
+### Step 2 — Generate Design System
+
+```text
 Use generate-color-palette to get color recommendations
-Use create-design-system to get full design system
+Use create-design-system to get platform-appropriate tokens
 Use generate-component-library for component specs
 ```
 
-3. **Create Content Strategy**
-```
+### Step 3 — Create Content Strategy
+
+```text
 Use generate-content-architecture for page structure
 Use generate-copy-guidelines for writing guidance
 ```
 
-4. **Validate Accessibility & Performance**
+### Step 4 — Validate Accessibility & Performance
+
+Web:
+
+```text
+Use check-accessibility to validate WCAG 2.2 AA compliance
+Use analyze-performance for Core Web Vitals recommendations
 ```
-Use check-accessibility to validate WCAG compliance
-Use analyze-performance for optimization recommendations
+
+Mobile:
+
+```text
+Use check-accessibility with platform field for VoiceOver/TalkBack, touch targets, Dynamic Type
+Use analyze-mobile-performance for launch time, frame rate, memory, battery analysis
+```
+
+### Step 5 — Reference During Implementation
+
+Web:
+
+```text
+template://component/*   → Ready-to-use HTML/CSS components
+reference://gsap-motion  → GSAP scroll animations
+```
+
+Mobile:
+
+```text
+reference://ios-hig          → Apple HIG navigation, typography, safe areas
+reference://material-design  → Material 3 color system, motion, component specs
 ```
 
 ## Development
@@ -240,7 +345,7 @@ npm run dev
 
 ## Architecture
 
-```
+```text
 src/
 ├── index.ts                 # Main MCP server
 ├── types/                   # TypeScript type definitions
@@ -268,18 +373,21 @@ This MCP server embodies world-class design studio standards:
 - **Accessibility as Baseline**: Inclusive design is non-negotiable
 - **Motion with Purpose**: Animation guides, clarifies, or delights
 - **Systems Thinking**: Create reusable patterns, not one-offs
+- **Platform Fidelity**: Native patterns feel right — fight the platform at your peril
 
-## Based On
+## Methodology
 
-This server implements the workflows and best practices from the Senior Design Director Agent Prompt, which encapsulates:
+Every recommendation from this server is grounded in the same principles used at world-class design studios:
 
-- Strategic visual hierarchy
-- Sophisticated motion design
-- Narrative-driven content architecture
-- WCAG 2.1 AA accessibility standards
-- Core Web Vitals performance optimization
-- Three-act storytelling framework
-- Design system methodology
+- Strategic visual hierarchy — guiding attention deliberately across every viewport
+- Sophisticated motion design — animation that signals state, guides flow, and reinforces brand
+- Narrative-driven content architecture — page structure derived from story, not layout convention
+- WCAG 2.2 AA accessibility standards — inclusive design built in from the start
+- Apple HIG and Material Design 3 compliance — platform-native patterns that respect user expectations
+- Core Web Vitals performance optimization — speed and stability as design requirements
+- Mobile performance benchmarks — cold launch, frame rate, and memory as first-class design constraints
+- Three-act storytelling framework — scroll mapped to emotional journey
+- Design system methodology — consistent tokens and components rather than one-off decisions
 
 ## License
 
@@ -288,6 +396,7 @@ MIT
 ## Contributing
 
 Contributions welcome! Please ensure:
+
 - TypeScript types are properly defined
 - Tools return structured JSON responses
 - Resources use appropriate MIME types

@@ -3,7 +3,7 @@
  * Implements the 15-question discovery process from the design director prompt
  */
 
-import { ProjectBrief } from '../types/index.js';
+import { ProjectBrief, Platform } from '../types/index.js';
 import { briefStorage } from '../utils/storage.js';
 
 export const DISCOVERY_QUESTIONS = {
@@ -113,8 +113,9 @@ Example:
 7. Contact/CTA`,
 
   TECHNICAL_REQUIREMENTS: `Do you have any technical constraints or requirements?
-- Specific technology stack required? (WordPress, Webflow, custom React, etc.)
-- Integration needs? (CRM, email marketing, booking system, payment processor?)
+- What platform? (Web, iOS app, Android app, cross-platform mobile with React Native/Flutter, or both web + mobile?)
+- Specific technology stack? (React, Next.js, Webflow, SwiftUI, Jetpack Compose, React Native, Flutter, etc.)
+- Integration needs? (CRM, email marketing, booking system, payment processor, push notifications?)
 - Content Management System needed? (Headless CMS, traditional CMS, static?)
 - Budget for development? (This informs tech stack and complexity)
 - Timeline for launch?
@@ -173,6 +174,7 @@ export function completeProjectDiscovery(answers: {
   contentInventory?: string[];
   contentGaps?: string[];
   pageStructure?: string[];
+  platform?: Platform;
   techStackPreference?: string;
   integrations?: string[];
   cmsStrategy?: string;
@@ -232,6 +234,7 @@ export function completeProjectDiscovery(answers: {
       PAGE_STRUCTURE: answers.pageStructure ?? []
     },
     TECHNICAL: {
+      PLATFORM: answers.platform ?? 'web',
       TECH_STACK_PREFERENCE: answers.techStackPreference ?? '',
       INTEGRATIONS: answers.integrations ?? [],
       CMS_STRATEGY: answers.cmsStrategy ?? '',

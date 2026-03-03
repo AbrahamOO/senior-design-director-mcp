@@ -2,7 +2,7 @@
  * Resource providers for design templates, references, and guidelines
  */
 
-export function getDesignReference(type: 'easing' | 'breakpoints' | 'typography-scale' | 'spacing' | 'color-psychology' | 'webflow-animation' | 'gsap-motion'): string {
+export function getDesignReference(type: 'easing' | 'breakpoints' | 'typography-scale' | 'spacing' | 'color-psychology' | 'webflow-animation' | 'gsap-motion' | 'ios-hig' | 'material-design'): string {
   switch (type) {
     case 'easing':
       return `
@@ -518,6 +518,280 @@ const motion = {
 
 gsap.from('.card', { opacity: 0, y: 30, ...motion.medium });
 \`\`\`
+`;
+
+    case 'ios-hig':
+      return `
+# iOS Human Interface Guidelines — Design Patterns Reference
+
+## Navigation Patterns
+
+### NavigationStack (push/pop)
+- Use for hierarchical content: list → detail → sub-detail
+- Back button always shows previous screen title (truncated to 12 chars)
+- Large title on root screen collapses to inline on scroll
+- \`navigationBarTitleDisplayMode(.large)\` for root, \`.inline\` for detail
+
+### Tab Bar (UITabBar)
+- Use for peer-level destinations (max 5 tabs)
+- Tab bar height: 49pt + 34pt home indicator = 83pt total safe zone
+- Icons: 25pt SF Symbols, filled variant for selected state
+- Always visible — never hide tab bar on navigation push
+- Badge: red circle (UIBadgeValue), 8pt minimum, auto-positions top-right of icon
+
+### Modal / Sheet Presentation
+- UISheetPresentationController detents: .medium (50%) and .large (90%)
+- Drag handle: 36pt × 4pt, centered, 8pt from top edge
+- Sheet dismiss: drag down OR tap scrim — always both options
+- Full-screen modal: use only for immersive tasks (camera, video)
+
+### Split View (iPad)
+- UISplitViewController for iPad — sidebar + content layout
+- Adapt to compact width with single-column layout on iPhone
+- .adaptivePresentationStyle for automatic iPhone/iPad transitions
+
+---
+
+## Typography — Dynamic Type Scale
+
+| Style         | Default | xxxLarge |
+|---------------|---------|----------|
+| Caption 2     | 11pt    | 19pt     |
+| Caption 1     | 12pt    | 20pt     |
+| Footnote      | 13pt    | 21pt     |
+| Subheadline   | 15pt    | 23pt     |
+| Body          | 17pt    | 25pt     |
+| Title 3       | 20pt    | 28pt     |
+| Title 2       | 22pt    | 30pt     |
+| Title 1       | 28pt    | 38pt     |
+| Large Title   | 34pt    | 46pt     |
+
+**Implementation:**
+\`\`\`swift
+// SwiftUI
+Text("Hello").font(.body)  // auto-scales with Dynamic Type
+Text("Title").font(.largeTitle).bold()
+
+// UIKit
+label.font = UIFont.preferredFont(forTextStyle: .body)
+label.adjustsFontForContentSizeCategory = true
+\`\`\`
+
+---
+
+## Touch Targets & Spacing
+
+- **Minimum touch target**: 44×44pt (Apple HIG requirement)
+- **Recommended**: 48×48pt for primary actions
+- **Spacing between targets**: 8pt minimum (16pt for destructive actions)
+- **Edge margins**: 16–20pt from screen edges for primary content
+- **List row height**: 44pt minimum, 56pt for two-line, 72pt for image rows
+
+---
+
+## Safe Areas
+
+| Area              | iPhone with Dynamic Island | iPhone without notch |
+|-------------------|---------------------------|----------------------|
+| Status bar        | 59pt                      | 44pt                 |
+| Navigation bar    | 44pt                      | 44pt                 |
+| Tab bar           | 83pt (incl. home indicator) | 49pt               |
+| Home indicator    | 34pt                      | 0pt                  |
+
+**Always use safeAreaInsets / safeAreaLayoutGuide — never hard-code these values.**
+
+---
+
+## SF Symbols
+
+- Use SF Symbols for all icons — 4,000+ symbols, automatically match system weight
+- Sizes: .caption2, .caption, .footnote, .subheadline, .body, .callout, .headline, .title3, .title2, .title, .largeTitle
+- Rendering: .monochrome (default), .hierarchical, .palette, .multicolor
+- Never use UIImage.systemImage for decorative purposes without accessibilityLabel
+
+\`\`\`swift
+Image(systemName: "heart.fill")
+  .symbolRenderingMode(.hierarchical)
+  .foregroundStyle(.red)
+  .font(.title2)
+  .accessibilityLabel("Liked")
+\`\`\`
+
+---
+
+## Motion — iOS Native Patterns
+
+- **Spring physics**: UISpringTimingParameters or SwiftUI .spring()
+  - Calm/Premium: damping 0.85, stiffness 150
+  - Default: damping 0.75, stiffness 200
+  - Energetic: damping 0.6, stiffness 280
+- **Screen transitions**: push (0.35s ease-out), modal (0.3s ease-out upward)
+- **Reduce Motion**: always check UIAccessibility.isReduceMotionEnabled
+  - Replace translate/scale → fade (opacity only)
+  - Use @Environment(\\.accessibilityReduceMotion) in SwiftUI
+
+---
+
+## Color System
+
+- **Semantic colors** (auto-adapt to light/dark mode):
+  - .systemBackground, .secondarySystemBackground, .tertiarySystemBackground
+  - .label, .secondaryLabel, .tertiaryLabel, .quaternaryLabel
+  - .systemBlue, .systemRed, .systemGreen (use tinted variants, never raw hex)
+- **Dark mode**: Always test in dark mode — use Asset Catalog color sets
+- **Tint color**: accentColor in SwiftUI / tintColor in UIKit drives interactive element color
+
+---
+
+## Edge Cases & Common Mistakes
+
+- ❌ Never hide the status bar in a non-game app
+- ❌ Never disable bounce scrolling (it signals to users where the list ends)
+- ❌ Never use modal sheets for confirmation dialogs — use UIAlertController instead
+- ❌ Never intercept the swipe-back gesture — always support it
+- ✅ Use .contextMenu for long-press secondary actions (not custom gesture recognizers)
+- ✅ Support both portrait and landscape on iPad
+- ✅ Keyboard avoidance: use .ignoresSafeArea(.keyboard) carefully — inputs must always be visible
+- ✅ Handle state restoration — save scroll position, form text, expanded states across app launches
+`;
+
+    case 'material-design':
+      return `
+# Material Design 3 (Material You) — Design Patterns Reference
+
+## Color System — Dynamic Color
+
+### Tonal Palette Roles
+| Token               | Light                     | Dark                      |
+|---------------------|---------------------------|---------------------------|
+| primary             | Key brand color           | Lighter tint of brand     |
+| onPrimary           | Text/icons on primary     | Text/icons on primary     |
+| primaryContainer    | Background for filled btn | Background for filled btn |
+| onPrimaryContainer  | Text on primaryContainer  | Text on primaryContainer  |
+| secondary           | Complementary accent      | Complementary accent      |
+| surface             | Card/screen background    | Dark surface              |
+| surfaceVariant      | Input field backgrounds   | Slightly lighter surface  |
+| outline             | Border/divider color      | Border color              |
+| error / onError     | Red tone + white          | Light red + dark          |
+
+**Dynamic Color (Android 12+):** Material You extracts colors from the user's wallpaper.
+Always provide a fallback palette for older devices.
+
+---
+
+## Typography — Material Type Scale (sp units)
+
+| Style           | Size  | Weight | Usage                         |
+|-----------------|-------|--------|-------------------------------|
+| Display Large   | 57sp  | 400    | Hero, splash screens          |
+| Display Medium  | 45sp  | 400    | Feature sections              |
+| Display Small   | 36sp  | 400    | Section headers               |
+| Headline Large  | 32sp  | 400    | Major screen titles           |
+| Headline Medium | 28sp  | 400    | Screen section headers        |
+| Headline Small  | 24sp  | 400    | Card headers                  |
+| Title Large     | 22sp  | 400    | App bar titles                |
+| Title Medium    | 16sp  | 500    | Dialog titles, list headers   |
+| Title Small     | 14sp  | 500    | Overlines, section labels     |
+| Body Large      | 16sp  | 400    | Primary reading text          |
+| Body Medium     | 14sp  | 400    | Secondary text                |
+| Body Small      | 12sp  | 400    | Captions, helper text         |
+| Label Large     | 14sp  | 500    | Button labels, tabs           |
+| Label Medium    | 12sp  | 500    | Chip labels                   |
+| Label Small     | 11sp  | 500    | Overlines, badge labels       |
+
+**Always use sp for text — never dp or px for font sizes.**
+
+---
+
+## Component Specifications
+
+### Buttons
+- **Filled**: Primary action, primaryContainer bg, 20dp corner radius
+- **Tonal**: Secondary action, secondaryContainer, 20dp radius
+- **Outlined**: Less prominent, outline border, 20dp radius
+- **Text**: Lowest emphasis, no background
+- **FAB**: 56dp standard, 40dp small, 96dp large, 16dp corner radius
+- Min height: 40dp, min touch target: 48dp, 24dp horizontal padding
+
+### Top App Bar
+- Small: 64dp height, centered or start-aligned title
+- Medium: 112dp with large title below
+- Large: 152dp with prominent large title
+- Scrolling behavior: collapse (reduce height) or elevate (add shadow)
+- Actions: max 3 icon buttons right, overflow menu for more
+
+### Navigation Bar (Bottom)
+- Height: 80dp (includes 8dp bottom padding for gesture nav)
+- 3–5 destinations (mandatory — no fewer, no more)
+- Active indicator: pill shape, 64dp × 32dp, secondaryContainer color
+- Icon size: 24dp, label: Label Medium (12sp)
+- Must clear gesture navigation bar — use WindowInsetsCompat
+
+### Bottom Sheet
+- Modal: scrim dimmed, tap to dismiss, drag handle required
+- Standard: no scrim, coexists with screen content
+- Corner radius: 28dp top corners (Material spec)
+- Peek height: 50% of screen (half-expanded) → 90% (expanded)
+- Drag handle: 32dp × 4dp, centered, 22dp from top edge
+
+### Cards
+- **Elevated**: shadow 1dp default, 4dp hover, surface color
+- **Filled**: surfaceVariant background, no shadow
+- **Outlined**: outline color border, no shadow
+- Corner radius: 12dp (standard), 16dp (large)
+
+---
+
+## Spacing & Layout
+
+- Base grid: 4dp
+- Touch targets: 48×48dp minimum (all interactive elements)
+- Horizontal margins: 16dp (compact), 24dp (medium), 24dp (expanded)
+- Content max-width: 840dp (medium window), 1240dp (expanded)
+- Between cards/list items: 8dp vertical spacing
+
+---
+
+## Motion — Material Motion System
+
+### Easing Curves
+\`\`\`
+Emphasized:          cubic-bezier(0.2, 0, 0, 1)       — spatial transitions
+Emphasized Decelerate: cubic-bezier(0.05, 0.7, 0.1, 1) — elements entering screen
+Emphasized Accelerate: cubic-bezier(0.3, 0.0, 0.8, 0.15) — elements leaving screen
+Standard:            cubic-bezier(0.2, 0, 0, 1)       — non-spatial transitions
+Standard Decelerate: cubic-bezier(0, 0, 0, 1)         — entering without origin
+Standard Accelerate: cubic-bezier(0.3, 0, 1, 1)       — exiting without destination
+\`\`\`
+
+### Duration Scale
+\`\`\`
+Short 1: 50ms    — micro (color changes, checkbox toggle)
+Short 2: 100ms   — icon morphs, tooltip
+Short 3: 150ms   — FAB icon switch
+Short 4: 200ms   — chip appear, snackbar fade
+Medium 1: 250ms  — list item expand
+Medium 2: 300ms  — dialog enter, bottom sheet peek
+Medium 3: 350ms  — nav drawer open
+Medium 4: 400ms  — full-screen modal
+Long 1: 450ms    — page transition
+Long 2: 500ms    — emphasized, large container transform
+\`\`\`
+
+---
+
+## Edge Cases & Common Mistakes
+
+- ❌ Never use px for font sizes — sp required for font accessibility scaling
+- ❌ Never block the back gesture/button — always handle onBackPressedDispatcher
+- ❌ Never hardcode status bar height (24dp) — use WindowInsets for actual value
+- ❌ FAB should never be used for destructive actions (delete, remove)
+- ✅ Support predictive back gesture (Android 14+) with OnBackPressedCallback
+- ✅ Handle all window size classes: compact (<600dp), medium (600–840dp), expanded (>840dp)
+- ✅ Test with TalkBack enabled — every interactive element needs contentDescription or role
+- ✅ Use \`Modifier.semantics\` in Compose for custom accessibility actions
+- ✅ Provide night/dark mode variants in all color slots — test in both light and dark
+- ✅ Respect "Remove Animations" developer setting via ValueAnimator.areAnimatorsEnabled()
 `;
 
     default:

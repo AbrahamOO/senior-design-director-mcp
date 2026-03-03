@@ -1,9 +1,308 @@
 /**
  * Performance Advisor Tool
- * Provides performance optimization recommendations based on Core Web Vitals
+ * Provides performance optimization recommendations based on Core Web Vitals (web)
+ * and native mobile performance metrics (iOS & Android)
  */
 
-import { PerformanceRecommendation } from '../types/index.js';
+import { PerformanceRecommendation, Platform } from '../types/index.js';
+
+// ---------------------------------------------------------------------------
+// Mobile performance helpers — one concern per function
+// ---------------------------------------------------------------------------
+
+function analyzeWarmLaunch(isIOS: boolean, warmLaunchMs?: number): PerformanceRecommendation[] {
+  if (warmLaunchMs === undefined || warmLaunchMs <= 400) return [];
+  const firstRec = isIOS
+    ? 'Ensure viewDidLoad / viewWillAppear do not reload data from scratch on every foreground — use diff/cache'
+    : 'Ensure Activity.onStart() does not re-initialize state that is already cached in the ViewModel';
+  return [{
+    category: 'App Launch — Warm Start',
+    current: `${warmLaunchMs}ms`,
+    target: '<200ms',
+    recommendations: [
+      firstRec,
+      'Cache last-known good data locally and display it immediately while refreshing in background',
+      'Avoid full-view recreation on warm launch — check if scene/activity is being unnecessarily destroyed'
+    ],
+    priority: 'high'
+  }];
+}
+
+const COLD_START_RECS_IOS = [
+  'Defer all work until after applicationDidBecomeActive — do not block didFinishLaunchingWithOptions',
+  'Avoid synchronous network calls, heavy disk I/O, or database queries at launch',
+  'Use background initialization for non-critical services (analytics, logging)',
+  'Pre-warm launch screen with a launch storyboard that matches your first screen layout to avoid visual jarring',
+  'Instrument with MetricKit or Xcode Organizer launch time metric to find bottlenecks',
+  'Eliminate unused initializers in Swift — static let singletons that run expensive setup at app start',
+];
+
+const COLD_START_RECS_ANDROID = [
+  'Avoid heavy work in Application.onCreate() — defer to background threads or lazy initialization',
+  'Use App Startup library to sequence and parallelize component initialization',
+  'Defer SDK initializations (analytics, crash reporting) with 500ms delay after first Activity resumes',
+  'Enable R8 full mode for aggressive code shrinking (reduces dex size, speeds class loading)',
+  'Profile with Android Studio Profiler (CPU Trace) — look for long sequences in main thread at startup',
+  'Use Baseline Profiles to pre-compile critical code paths via ART (improves cold start 20–40%)',
+];
+
+function analyzeAppLaunch(
+  platform: Platform,
+  coldLaunchMs?: number,
+  warmLaunchMs?: number
+): PerformanceRecommendation[] {
+  const isIOS = platform === 'mobile-ios' || platform === 'both';
+  const coldTarget = isIOS ? 400 : 500;
+  const coldPoor = isIOS ? 600 : 800;
+  const results: PerformanceRecommendation[] = [];
+
+  if (coldLaunchMs !== undefined) {
+    if (coldLaunchMs > coldPoor) {
+      results.push({
+        category: 'App Launch — Cold Start',
+        current: `${coldLaunchMs}ms`,
+        target: `<${coldTarget}ms`,
+        recommendations: isIOS ? COLD_START_RECS_IOS : COLD_START_RECS_ANDROID,
+        priority: 'high',
+      });
+    } else if (coldLaunchMs > coldTarget) {
+      const syncRead = isIOS
+        ? 'Check for synchronous UserDefaults / NSKeyedUnarchiver reads blocking the main thread'
+        : 'Check for synchronous SharedPreferences reads on the main thread';
+      results.push({
+        category: 'App Launch — Cold Start',
+        current: `${coldLaunchMs}ms`,
+        target: `<${coldTarget}ms for excellent`,
+        recommendations: [
+          'Review work done before first frame — anything above 200ms should be audited',
+          'Use lazy loading for features not needed on launch screen',
+          syncRead,
+        ],
+        priority: 'medium',
+      });
+    }
+  }
+
+  return [...results, ...analyzeWarmLaunch(isIOS, warmLaunchMs)];
+}
+
+function analyzeFrameRate(platform: Platform, frameRate?: number): PerformanceRecommendation[] {
+  if (frameRate === undefined || frameRate >= 60) return [];
+  const isIOS = platform === 'mobile-ios' || platform === 'both';
+
+  if (frameRate < 30) {
+    return [{
+      category: 'Frame Rate — Severe Jank',
+      current: `${frameRate}fps`,
+      target: '60fps (16ms per frame budget)',
+      recommendations: isIOS ? [
+        'Profile with Instruments > Core Animation — identify offscreen rendering and blended layers',
+        'Eliminate UIView.layer.shouldRasterize on scrolling views — causes compositing overhead',
+        'Avoid modifying UIView.layer.cornerRadius on animated views — use CAShapeLayer mask instead',
+        'Move image decoding off the main thread using ImageIO + background queue',
+        'Use UICollectionView with cell prefetching (prefetchDataSource) to prepare cells before they appear',
+        'Reduce view hierarchy depth — flatten where possible, avoid unnecessary UIView wrappers'
+      ] : [
+        'Profile with Android Studio GPU Rendering / Systrace — identify long frames (>16ms)',
+        'Avoid overdraw — use "Show Overdraw Areas" in Developer Options (maximum 2-3 layers)',
+        'Replace View.setLayerType(LAYER_TYPE_SOFTWARE) with hardware acceleration',
+        'Move RecyclerView item decoration rendering off the main thread',
+        'Use Compose LazyColumn with keys for stable identity — prevents unnecessary recompositions',
+        'Reduce nested layouts — use ConstraintLayout or Compose instead of nested LinearLayouts'
+      ],
+      priority: 'high'
+    }];
+  }
+
+  return [{
+    category: 'Frame Rate — Minor Jank',
+    current: `${frameRate}fps`,
+    target: '60fps consistent (no dropped frames)',
+    recommendations: [
+      'Use profiler during scroll and animation to catch occasional frame drops',
+      isIOS
+        ? 'Check for main-thread Core Data fetches during scroll — use background context with NSFetchedResultsController'
+        : 'Check for main-thread database queries during scroll — use Room DAO with suspend functions',
+      'Review list cell/item bind logic — keep bindView/onBindViewHolder under 2ms'
+    ],
+    priority: 'medium'
+  }];
+}
+
+function analyzeMemoryUsage(platform: Platform, memoryMb?: number): PerformanceRecommendation[] {
+  if (memoryMb === undefined) return [];
+  const isIOS = platform === 'mobile-ios' || platform === 'both';
+  const warningThreshold = isIOS ? 150 : 200;
+  const criticalThreshold = isIOS ? 300 : 350;
+
+  if (memoryMb > criticalThreshold) {
+    return [{
+      category: 'Memory Usage — Critical',
+      current: `${memoryMb}MB`,
+      target: `<${warningThreshold}MB typical usage`,
+      recommendations: isIOS ? [
+        'Respond to didReceiveMemoryWarning — release all caches, non-visible images, and prefetched data',
+        'Use NSCache instead of NSDictionary for image/data caches — auto-evicts under memory pressure',
+        'Profile with Instruments > Allocations — look for retain cycles and unbounded caches',
+        'Set UIImage.preparingThumbnail(of:) for thumbnail display — never load full-res into a thumbnail slot',
+        'Paginate large data sets — never load entire dataset into memory for a list',
+        'Use weak references for delegate patterns to prevent retain cycles that accumulate over time'
+      ] : [
+        'Register ActivityLifecycleCallbacks to trim caches on onTrimMemory(TRIM_MEMORY_UI_HIDDEN)',
+        'Use Coil/Glide memory cache limits — cap at 20% of available heap',
+        'Profile with Android Studio Memory Profiler — look for leaked Activities, Contexts, and Bitmaps',
+        'Recycle Bitmaps explicitly when done (pre-Lollipop) or use Coil/Glide which handles this automatically',
+        'Paginate with Paging 3 library — never load unbounded lists into a ViewModel',
+        'Avoid leaking Context into singletons — use applicationContext for long-lived objects'
+      ],
+      priority: 'high'
+    }];
+  }
+
+  if (memoryMb > warningThreshold) {
+    return [{
+      category: 'Memory Usage — Elevated',
+      current: `${memoryMb}MB`,
+      target: `<${warningThreshold}MB`,
+      recommendations: [
+        'Review image loading strategy — use appropriate thumbnail sizes, not full-resolution images in lists',
+        isIOS
+          ? 'Use NSCache with countLimit and totalCostLimit to bound in-memory image cache'
+          : 'Set explicit memory cache size in Coil/Glide ImageLoader configuration',
+        'Audit for retained references across screen navigations — use memory profiler after navigating back'
+      ],
+      priority: 'medium'
+    }];
+  }
+
+  return [];
+}
+
+function analyzeBatteryAndAssets(
+  platform: Platform,
+  batteryImpact?: 'low' | 'moderate' | 'high',
+  assetDensities?: boolean
+): PerformanceRecommendation[] {
+  const results: PerformanceRecommendation[] = [];
+  const isIOS = platform === 'mobile-ios' || platform === 'both';
+
+  if (batteryImpact === 'high') {
+    results.push({
+      category: 'Battery Impact',
+      current: 'High battery drain detected',
+      target: 'Minimal background battery usage',
+      recommendations: isIOS ? [
+        'Move background work to BGTaskScheduler (BGProcessingTask / BGAppRefreshTask) — never use Timer in background',
+        'Use CLLocationManager with significantLocationChanges instead of continuous GPS tracking',
+        'Reduce animation frame rate with CADisplayLink.preferredFrameRateRange when not in foreground',
+        'Audit for background URLSession tasks that run unnecessarily frequently',
+        'Use UIBackgroundTaskIdentifier only for short-lived completion tasks (<30 seconds)',
+        'Profile with Instruments > Energy Log — look for CPU wake-ups and excessive radio usage'
+      ] : [
+        'Use WorkManager for deferrable background tasks — system schedules at optimal battery time',
+        'Avoid WakeLock — use JobScheduler / WorkManager constraints instead',
+        'Use PRIORITY_BALANCED_POWER_ACCURACY for location in non-navigation contexts',
+        'Batch network requests — avoid frequent small requests, use exponential backoff for polling',
+        'Profile with Android Studio Energy Profiler — look for wakelock holds and network bursts',
+        'Use Doze mode safe APIs — test by forcing Doze with `adb shell dumpsys deviceidle force-idle`'
+      ],
+      priority: 'high'
+    });
+  }
+
+  if (assetDensities === false) {
+    results.push({
+      category: 'Asset Densities',
+      current: 'Missing asset density variants',
+      target: isIOS ? 'All three: @1x, @2x, @3x' : 'All five: mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi',
+      recommendations: isIOS ? [
+        'Provide @1x, @2x, @3x in the .xcassets image catalog for all raster assets',
+        '@3x (180+ ppi) covers iPhone 14 Pro, 15 Pro, and all "Super Retina" displays',
+        '@2x (2× scale) covers iPhone SE, most standard iPhones, and all iPads',
+        'Use PDF vector assets in .xcassets with "Preserve Vector Data" for icons — scales to any density',
+        'For SF Symbols, use UIImage.systemImage — no density variants needed',
+        'Ensure app icon has all required sizes in AppIcon asset catalog (20pt–1024pt)'
+      ] : [
+        'Place assets in drawable-mdpi, drawable-hdpi, drawable-xhdpi, drawable-xxhdpi, drawable-xxxhdpi',
+        'Most modern Android phones are xxhdpi (480dpi) or xxxhdpi (640dpi)',
+        'Use vector drawables (SVG-like XML) for icons — single file scales to all densities',
+        'For photos/bitmaps, provide xxhdpi as minimum; xxxhdpi for flagship devices',
+        'Use Android Studio Vector Asset Studio to convert SVGs to VectorDrawable',
+        'Check with Density Tester app or Device File Explorer to verify correct assets are loading'
+      ],
+      priority: 'high'
+    });
+  }
+
+  return results;
+}
+
+export function analyzeMobilePerformance(options: {
+  platform: Platform;
+  coldLaunchMs?: number;
+  warmLaunchMs?: number;
+  frameRate?: number;
+  memoryUsageMb?: number;
+  batteryImpact?: 'low' | 'moderate' | 'high';
+  assetDensities?: boolean;
+}): {
+  success: boolean;
+  message: string;
+  recommendations?: PerformanceRecommendation[];
+  overallScore?: number;
+} {
+  const all: PerformanceRecommendation[] = [
+    ...analyzeAppLaunch(options.platform, options.coldLaunchMs, options.warmLaunchMs),
+    ...analyzeFrameRate(options.platform, options.frameRate),
+    ...analyzeMemoryUsage(options.platform, options.memoryUsageMb),
+    ...analyzeBatteryAndAssets(options.platform, options.batteryImpact, options.assetDensities),
+  ];
+
+  const highCount = all.filter(r => r.priority === 'high').length;
+  const score = Math.max(0, 100 - highCount * 20 - all.filter(r => r.priority === 'medium').length * 5);
+
+  let grade = 'Excellent mobile performance.';
+  if (score < 90) grade = 'Good, with room for improvement.';
+  if (score < 75) grade = 'Address high-priority items before shipping.';
+  if (score < 50) grade = 'Critical performance issues — users will notice.';
+
+  return {
+    success: true,
+    message: `Mobile performance analysis (${options.platform}) complete. Score: ${score}/100. ${grade}`,
+    recommendations: all,
+    overallScore: score,
+  };
+}
+
+export function getMobilePerformanceTargets(): {
+  success: boolean;
+  ios: { metric: string; good: string; acceptable: string; poor: string; tool: string }[];
+  android: { metric: string; good: string; acceptable: string; poor: string; tool: string }[];
+} {
+  return {
+    success: true,
+    ios: [
+      { metric: 'Cold Launch Time', good: '<400ms', acceptable: '400–600ms', poor: '>600ms', tool: 'Xcode Organizer / MetricKit' },
+      { metric: 'Warm Launch Time', good: '<200ms', acceptable: '200–400ms', poor: '>400ms', tool: 'Xcode Instruments — Time Profiler' },
+      { metric: 'Frame Rate (scroll/animation)', good: '60fps (ProMotion: 120fps)', acceptable: '45–59fps', poor: '<45fps', tool: 'Instruments — Core Animation FPS' },
+      { metric: 'Peak Memory', good: '<150MB', acceptable: '150–300MB', poor: '>300MB (jettison risk)', tool: 'Instruments — Allocations / Leaks' },
+      { metric: 'App Binary Size (download)', good: '<25MB', acceptable: '25–50MB', poor: '>50MB (user hesitation)', tool: 'App Store Connect — App Size Report' },
+      { metric: 'Main Thread Blocking', good: '<16ms per frame', acceptable: '16–32ms', poor: '>32ms (visible drop)', tool: 'Instruments — Time Profiler' },
+      { metric: 'Network (3G loading)', good: '<3s first meaningful paint', acceptable: '3–5s', poor: '>5s', tool: 'Charles Proxy / Network Link Conditioner' },
+      { metric: 'Battery Impact (background)', good: 'None / negligible', acceptable: 'Low (2–5% per hour active)', poor: '>5% per hour background', tool: 'Instruments — Energy Log' },
+    ],
+    android: [
+      { metric: 'Cold Start Time', good: '<500ms', acceptable: '500–800ms', poor: '>800ms', tool: 'Android Studio Profiler / ADB logcat ActivityTaskManager' },
+      { metric: 'Warm Start Time', good: '<200ms', acceptable: '200–400ms', poor: '>400ms', tool: 'Android Studio Profiler' },
+      { metric: 'Frame Rate (scroll/animation)', good: '60fps', acceptable: '45–59fps', poor: '<45fps', tool: 'GPU Rendering Profile / Systrace / Perfetto' },
+      { metric: 'Peak Memory (heap)', good: '<200MB', acceptable: '200–350MB', poor: '>350MB (OOM risk)', tool: 'Android Studio Memory Profiler' },
+      { metric: 'APK / AAB Size', good: '<25MB download', acceptable: '25–50MB', poor: '>50MB (conversion drop)', tool: 'Play Console — Android Vitals' },
+      { metric: 'Main Thread Frame Time', good: '<16ms', acceptable: '16–32ms', poor: '>32ms', tool: 'Systrace / Perfetto' },
+      { metric: 'Jank Rate (frames >16ms)', good: '<5% of frames', acceptable: '5–10%', poor: '>10%', tool: 'Android Vitals / adb shell dumpsys gfxinfo' },
+      { metric: 'ANR Rate', good: '<0.1%', acceptable: '0.1–0.47%', poor: '>0.47% (Play Store warning)', tool: 'Play Console — Android Vitals' },
+    ]
+  };
+}
 
 export function analyzePerformance(options: {
   lcp?: number; // Largest Contentful Paint in ms

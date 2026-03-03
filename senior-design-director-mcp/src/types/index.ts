@@ -2,6 +2,8 @@
  * Type definitions for the Senior Design Director MCP Server
  */
 
+export type Platform = 'web' | 'mobile-ios' | 'mobile-android' | 'mobile-cross-platform' | 'both';
+
 export interface ProjectBrief {
   PROJECT_NAME: string;
   PROJECT_DESCRIPTION: string;
@@ -54,6 +56,7 @@ export interface ProjectBrief {
   };
 
   TECHNICAL: {
+    PLATFORM: Platform;
     TECH_STACK_PREFERENCE: string;
     INTEGRATIONS: string[];
     CMS_STRATEGY: string;
@@ -121,7 +124,44 @@ export interface ColorPalette {
   usageGuidelines: string;
 }
 
+export interface MobileTokens {
+  /** Unit system for the platform */
+  unitSystem: 'pt' | 'dp' | 'px';
+  /** Safe area insets (pt for iOS, dp for Android) */
+  safeAreas: {
+    statusBar: number;
+    homeIndicator: number;
+    navigationBar: number;
+    tabBar: number;
+  };
+  /** Platform-specific touch target minimum */
+  touchTarget: {
+    minimum: number;
+    recommended: number;
+    unit: string;
+  };
+  /** Platform-specific screen sizes */
+  screenSizes: {
+    name: string;
+    width: number;
+    height: number;
+    scale: number;
+  }[];
+  /** Native motion system */
+  nativeMotion: {
+    springDamping?: number;
+    springStiffness?: number;
+    springMass?: number;
+    standardDuration: string;
+    emphasizedDuration: string;
+    decelerateEasing: string;
+    accelerateEasing: string;
+  };
+}
+
 export interface DesignSystem {
+  platform: Platform;
+
   typography: {
     displayFont: {
       family: string;
@@ -147,15 +187,20 @@ export interface DesignSystem {
 
   spacing: {
     baseUnit: number;
+    unit: string;
     scale: number[];
   };
 
-  breakpoints: {
+  /** Web breakpoints — populated for web and both platforms */
+  breakpoints?: {
     name: string;
     minWidth: number;
     maxWidth?: number;
     columns: number;
   }[];
+
+  /** Mobile tokens — populated for mobile and both platforms */
+  mobileTokens?: MobileTokens;
 
   motion: {
     easings: Record<string, string>;
