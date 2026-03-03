@@ -55,36 +55,122 @@ A Model Context Protocol (MCP) server that provides professional design guidance
 
 ## Installation
 
+> **Requirements**: Node.js 18 or higher
+
+### Install as an Agent Skill (Claude Code, Cursor, Codex, and more)
+
+Install the companion skill — teaches any compatible agent the full workflow for using this server:
+
 ```bash
-# Clone or navigate to the directory
-cd senior-design-director-mcp
-
-# Install dependencies
-npm install
-
-# Build the TypeScript code
-npm run build
+npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director
 ```
 
-## Usage with Claude Desktop
+The skill is installed locally into your agent's skills directory (`.claude/skills/`, `.cursor/skills/`, etc.) alongside the MCP server config below.
 
-Add this to your Claude Desktop configuration file:
+---
+
+### MCP Server — One-line install via npx (recommended)
+
+No build step needed — just add the config block to your AI client and it downloads and runs the server automatically on first use.
+
+---
+
+### Claude Desktop
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "senior-design-director": {
-      "command": "node",
-      "args": ["/absolute/path/to/senior-design-director-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "senior-design-director-mcp"]
     }
   }
 }
 ```
 
-After updating the config, restart Claude Desktop.
+Restart Claude Desktop after saving.
+
+---
+
+### Claude Code (CLI)
+
+```bash
+claude mcp add senior-design-director -- npx -y senior-design-director-mcp
+```
+
+Or add manually to `~/.claude/claude_desktop_config.json` (same format as Claude Desktop above).
+
+---
+
+### Cursor
+
+Open **Settings → Cursor Settings → MCP**, click **Add new MCP server**, and paste:
+
+```json
+{
+  "mcpServers": {
+    "senior-design-director": {
+      "command": "npx",
+      "args": ["-y", "senior-design-director-mcp"]
+    }
+  }
+}
+```
+
+---
+
+### Windsurf
+
+Add to `~/.windsurf/mcp_config.json` (or via **Settings → MCP Servers**):
+
+```json
+{
+  "mcpServers": {
+    "senior-design-director": {
+      "command": "npx",
+      "args": ["-y", "senior-design-director-mcp"]
+    }
+  }
+}
+```
+
+---
+
+### Codex (OpenAI)
+
+Add to your Codex MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "senior-design-director": {
+      "command": "npx",
+      "args": ["-y", "senior-design-director-mcp"]
+    }
+  }
+}
+```
+
+---
+
+### Any other MCP-compatible client
+
+Use the same pattern — run `npx -y senior-design-director-mcp` as the server command. The `-y` flag auto-confirms the package download on first run.
+
+---
+
+### Global install (optional)
+
+If you prefer a permanent install instead of `npx`:
+
+```bash
+npm install -g senior-design-director-mcp
+```
+
+Then use `senior-design-director-mcp` as the command (no `npx` or `args` needed).
 
 ## Available Tools
 
@@ -360,7 +446,7 @@ src/
 ├── resources/               # Template and reference providers
 │   └── templates.ts
 └── utils/                   # Utility functions
-    └── storage.ts           # In-memory project brief storage
+    └── storage.ts           # File-based persistent storage (~/.senior-design-director-mcp/)
 ```
 
 ## Design Principles

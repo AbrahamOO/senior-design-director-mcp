@@ -1,6 +1,6 @@
 {
   "name": "senior-design-director-mcp",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "MCP server for senior design director workflows - project discovery, design systems, color palettes, accessibility, and mobile app design (iOS HIG, Material Design 3)",
   "type": "module",
   "main": "dist/index.js",
@@ -8,10 +8,12 @@
     "senior-design-director-mcp": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/index.js",
     "watch": "tsc --watch",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
@@ -19,15 +21,41 @@
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "design",
-    "design-systems",
+    "design-system",
+    "design-tokens",
     "accessibility",
-    "web-design"
+    "wcag",
+    "web-design",
+    "ui-ux",
+    "color-palette",
+    "typography",
+    "ios-hig",
+    "material-design",
+    "performance",
+    "core-web-vitals",
+    "claude",
+    "cursor",
+    "ai-tools",
+    "codex"
   ],
   "author": "Abraham Ojo",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AbrahamOO/senior-design-director-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AbrahamOO/senior-design-director-mcp/issues"
+  },
+  "homepage": "https://github.com/AbrahamOO/senior-design-director-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.4"
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
