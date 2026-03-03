@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "senior-design-director": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "/Users/smilesparker/workplace/senior-design-director-mcp/senior-design-director-mcp/dist/index.js"
+        "-y",
+        "senior-design-director-mcp"
       ]
     }
   }
