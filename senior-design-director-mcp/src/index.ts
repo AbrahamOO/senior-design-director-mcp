@@ -2,7 +2,8 @@
 
 /**
  * Senior Design Director MCP Server
- * Provides tools for project discovery, design systems, and web design best practices
+ * Provides tools for project discovery, design systems, accessibility, and performance
+ * for web and premium mobile app design (iOS, Android, React Native, Flutter)
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -31,8 +32,10 @@ import {
 import { checkAccessibility, getAccessibilityChecklist } from './tools/accessibility.js';
 import {
   analyzePerformance,
+  analyzeMobilePerformance,
   getCoreWebVitalsTargets,
   getPerformanceBudget,
+  getMobilePerformanceTargets,
 } from './tools/performance.js';
 import {
   getDesignReference,
@@ -126,6 +129,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               type: 'array',
               items: { type: 'string' },
               description: 'Pages/sections for the site (in priority order)',
+            },
+            platform: {
+              type: 'string',
+              enum: ['web', 'mobile-ios', 'mobile-android', 'mobile-cross-platform', 'both'],
+              description: 'Target platform: web, mobile-ios, mobile-android, mobile-cross-platform (React Native / Flutter), or both (web + mobile)',
             },
             techStackPreference: { type: 'string', description: 'Preferred technology stack' },
             integrations: {
@@ -292,10 +300,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'check-accessibility',
-        description: 'Check accessibility compliance (WCAG 2.1 AA) for colors, HTML, forms, etc',
+        description: 'Check accessibility compliance (WCAG 2.2 AA) for web and mobile apps — colors, HTML, forms, touch targets, VoiceOver/TalkBack, Dynamic Type, Reduce Motion',
         inputSchema: {
           type: 'object',
           properties: {
+            platform: {
+              type: 'string',
+              enum: ['web', 'mobile-ios', 'mobile-android', 'mobile-cross-platform', 'both'],
+              description: 'Platform to check — enables mobile-specific checks when set to a mobile value',
+            },
             colors: {
               type: 'array',
               items: {
@@ -305,17 +318,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                   background: { type: 'string' },
                 },
               },
-              description: 'Color combinations to check',
+              description: 'Color combinations to check (works for all platforms)',
             },
-            semanticHTML: { type: 'string', description: 'HTML to check for semantic structure' },
-            formLabels: { type: 'boolean', description: 'Are form labels properly associated?' },
+            semanticHTML: { type: 'string', description: 'HTML to check for semantic structure (web only)' },
+            formLabels: { type: 'boolean', description: 'Are form labels properly associated? (web only)' },
             headingHierarchy: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Heading sequence (e.g., ["h1", "h2", "h3"])',
+              description: 'Heading sequence e.g. ["h1", "h2", "h3"] (web only)',
             },
-            ariaLabels: { type: 'boolean', description: 'Are ARIA labels present?' },
-            keyboardNav: { type: 'boolean', description: 'Is keyboard navigation supported?' },
+            ariaLabels: { type: 'boolean', description: 'Are ARIA labels present on interactive elements? (web only)' },
+            keyboardNav: { type: 'boolean', description: 'Is keyboard navigation supported? (web only)' },
+            touchTargetSize: { type: 'number', description: 'Touch target size in pt (iOS) or dp (Android) — minimum 44pt / 48dp' },
+            minimumTapSpacing: { type: 'number', description: 'Gap between adjacent touch targets in pt/dp — minimum 8' },
+            dynamicTypeSupport: { type: 'boolean', description: 'iOS: Does app support Dynamic Type scaling? Android: Are sp units used for all text?' },
+            screenReaderLabels: { type: 'boolean', description: 'Do all interactive elements have VoiceOver (iOS) or TalkBack (Android) labels?' },
+            reduceMotionSupport: { type: 'boolean', description: 'Does the app respond to iOS Reduce Motion / Android Disable Animations setting?' },
+            oledBackground: { type: 'string', description: 'Dark background hex color to check for OLED pure-black halation issues' },
           },
         },
       },
@@ -367,6 +386,39 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get-performance-budget',
         description: 'Get recommended performance budget for web projects',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'analyze-mobile-performance',
+        description: 'Analyze mobile app performance metrics — app launch time, frame rate, memory usage, battery impact, and asset densities for iOS and Android',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            platform: {
+              type: 'string',
+              enum: ['mobile-ios', 'mobile-android', 'mobile-cross-platform', 'both'],
+              description: 'Target mobile platform',
+            },
+            coldLaunchMs: { type: 'number', description: 'Cold app launch time in milliseconds (good: <400ms iOS / <500ms Android)' },
+            warmLaunchMs: { type: 'number', description: 'Warm app launch time in milliseconds (good: <200ms)' },
+            frameRate: { type: 'number', description: 'Typical frame rate in fps during scrolling/animation (target: 60fps)' },
+            memoryUsageMb: { type: 'number', description: 'Peak memory usage in MB (good: <150MB iOS / <200MB Android)' },
+            batteryImpact: {
+              type: 'string',
+              enum: ['low', 'moderate', 'high'],
+              description: 'Qualitative battery impact level',
+            },
+            assetDensities: { type: 'boolean', description: 'Are all required asset densities provided? (@1x/@2x/@3x for iOS, mdpi–xxxhdpi for Android)' },
+          },
+          required: ['platform'],
+        },
+      },
+      {
+        name: 'get-mobile-performance-targets',
+        description: 'Get reference performance targets for iOS and Android apps — launch time, frame rate, memory, battery, and asset thresholds',
         inputSchema: {
           type: 'object',
           properties: {},
@@ -465,6 +517,18 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
         name: 'GSAP Motion Reference',
         mimeType: 'text/markdown',
         description: 'GSAP core API, ScrollTrigger, timelines, stagger, React integration, and design token mapping',
+      },
+      {
+        uri: 'reference://ios-hig',
+        name: 'iOS Human Interface Guidelines Reference',
+        mimeType: 'text/markdown',
+        description: 'iOS HIG patterns — navigation, Dynamic Type, SF Symbols, safe areas, touch targets, motion, and edge cases',
+      },
+      {
+        uri: 'reference://material-design',
+        name: 'Material Design 3 Reference',
+        mimeType: 'text/markdown',
+        description: 'Material You patterns — dynamic color, type scale, components, motion system, spacing, and edge cases',
       },
     ],
   };
@@ -706,6 +770,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               text: JSON.stringify(result, null, 2),
             },
           ],
+        };
+      }
+
+      case 'analyze-mobile-performance': {
+        const result = analyzeMobilePerformance(args as any);
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+        };
+      }
+
+      case 'get-mobile-performance-targets': {
+        const result = getMobilePerformanceTargets();
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
         };
       }
 

@@ -1,12 +1,79 @@
-# Senior Design Director MCP
+# Senior Design Director MCP Server — AI-Powered Design System Generator for Claude
 
-A Model Context Protocol (MCP) server that brings world-class design direction into your AI workflow. It runs a structured project discovery process, generates complete design systems, validates accessibility and performance, and provides production-ready component templates — all grounded in a saved project brief so every decision stays consistent.
+[![npm version](https://img.shields.io/npm/v/senior-design-director-mcp)](https://www.npmjs.com/package/senior-design-director-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/senior-design-director-mcp)](https://www.npmjs.com/package/senior-design-director-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
+
+**Senior Design Director MCP** is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives Claude the capabilities of a senior creative director. It runs a structured 15-question project discovery process, generates complete design systems for **web and premium mobile apps** (iOS, Android, React Native, Flutter), validates WCAG accessibility, analyzes Core Web Vitals and native app performance, and delivers production-ready component templates — all grounded in a persistent project brief so every design decision stays consistent.
+
+Works with **Claude Desktop**, **Claude Code**, and any MCP-compatible AI client. No installation required — runs via `npx`.
+
+---
+
+## Why Senior Design Director MCP?
+
+Most AI design tools give you generic answers. This server works differently: it starts by deeply understanding your project — your audience, brand positioning, competitive landscape, and narrative arc — and then derives every color, typographic, and content decision from that context.
+
+The result is design direction that's specific to your project, not recycled from a template.
+
+- **Brief-driven** — every recommendation traces back to who the site is for and what it must accomplish
+- **Systematic** — color palettes, type scales, spacing, motion, and components are all connected to one design system
+- **Standards-compliant** — WCAG 2.1 AA accessibility and Core Web Vitals are built into the workflow, not added at the end
+- **Persistent** — project briefs are saved to disk and survive server restarts, so context carries across every conversation
+
+---
+
+## Quick Start
+
+No installation required. Add the server to your MCP client config and it starts automatically via `npx`.
+
+### Claude Desktop
+
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "senior-design-director": {
+      "command": "npx",
+      "args": ["-y", "senior-design-director-mcp"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving.
+
+### Claude Code
+
+Add to `~/.claude/settings.json` to make it available globally across all projects:
+
+```json
+{
+  "mcpServers": {
+    "senior-design-director": {
+      "command": "npx",
+      "args": ["-y", "senior-design-director-mcp"]
+    }
+  }
+}
+```
+
+### Other MCP Clients
+
+Any MCP-compatible client can run this server with:
+
+```bash
+npx -y senior-design-director-mcp
+```
 
 ---
 
 ## What It Does
 
-Rather than answering generic design questions, this server operates like a senior creative director onboarding a new project. It:
+Rather than answering generic design questions, this MCP server operates like a senior creative director onboarding a new project. It:
 
 1. **Runs a 15-question discovery session** to capture your audience, brand positioning, narrative arc, CTA strategy, and visual direction
 2. **Saves the project brief** to disk so context persists across every conversation and tool call
@@ -16,106 +83,65 @@ Rather than answering generic design questions, this server operates like a seni
 
 ## Features
 
-### Project Discovery & Management
+### Project Discovery & Brief Management
 
-- 15-question structured brief covering audience, positioning, narrative, CTAs, visual personality, content, technical requirements, and competitive landscape
-- Persistent file-based storage (`~/.senior-design-director-mcp/projects/`) — briefs survive server restarts
-- Full CRUD: create, retrieve, update, and delete project briefs
-- Standalone `get-discovery-questions` tool for manual brief preparation
+- 15-question structured brief covering audience psychology, brand positioning, narrative arc, CTAs, visual personality, content inventory, technical requirements, and competitive landscape
+- Persistent file-based storage (`~/.senior-design-director-mcp/projects/`) — briefs survive server restarts and new conversations
+- Full CRUD operations: create, retrieve, update, and delete project briefs
+- Standalone `get-discovery-questions` tool for preparing answers before running discovery
 
-### Color & Design Systems
+### What Kinds of Designs Can It Direct?
 
-- Color palette generation derived from emotional tone, industry category, and audience psychology — returns primary palette plus two alternatives with full rationale
-- WCAG contrast ratio validation with AA/AAA pass/fail results
-- Complete design system output: display/body/accent typography, modular scale, 8px spacing system, responsive breakpoints, and motion tokens
-- Component library specifications (buttons, cards, navigation, forms, modals, and more)
+| Project Type | Platform | Key Outputs |
+| --- | --- | --- |
+| SaaS / startup websites | Web | Design system, responsive breakpoints, copy guidelines, GSAP animations |
+| Agency / portfolio sites | Web | Three-act narrative structure, type-forward layouts, premium motion system |
+| E-commerce / product sites | Web | Conversion-focused CTA strategy, trust-building content architecture |
+| iOS apps | Native iOS | SF Pro typography with Dynamic Type, pt spacing, UITabBar/UINavigationBar specs, spring motion tokens, safe area system, VoiceOver compliance |
+| Android apps | Native Android | Material Design 3 components, sp/dp system, Google Sans/Roboto scale, Material motion system, TalkBack compliance |
+| React Native apps | Cross-platform | Platform-branched fonts, logical px spacing, shared motion tokens, safe area inset values |
+| Flutter apps | Cross-platform | Platform-aware type scale, Material/Cupertino hybrid patterns, shared spacing system |
+| Web + Mobile | Both | Full web breakpoints AND native mobile tokens — single design brief drives both surfaces |
 
-### Content Architecture
+### AI-Powered Color & Design System Generation
+
+- Color palette generation derived from emotional tone, industry category, and audience psychology — returns a primary palette plus two alternatives, each with hex values, RGB, usage rationale, and application guidelines
+- WCAG contrast ratio validation with AA/AAA pass/fail for normal and large text
+- **Platform-aware design system**: web (rem + breakpoints), iOS (pt + Dynamic Type + safe areas), Android (dp/sp + Material type scale), cross-platform (logical px + shared tokens)
+- **Mobile tokens**: UISpringTimingParameters / Material motion curves, touch target minimums (44pt iOS / 48dp Android), safe area insets (Dynamic Island-aware), screen size reference for iPhone SE through iPad Pro 12.9" and Android compact through large tablet
+- Component library specifications: web (buttons, cards, nav, forms, hero) + mobile native (UITabBar, UINavigationBar, Bottom Sheet, List Row, TextField, Toast/Snackbar, FAB, AsyncImage) with platform-specific states, haptic feedback, and edge cases
+
+### Content Architecture & Copywriting
 
 - Three-act narrative structure mapping scroll position to emotional journey (Problem → Transformation → Outcome)
 - Page structure recommendations tied to business objectives and conversion goals
-- Brand voice and copywriting guidelines derived from positioning and desired perception
+- Brand voice and copywriting guidelines — headline formulas, vocabulary, CTA copy patterns, and before/after examples — all derived from brand positioning
 
-### Accessibility
+### WCAG Accessibility & Mobile Accessibility Compliance
 
-- WCAG 2.1 AA compliance checking across color combinations, semantic HTML structure, form labels, heading hierarchy, ARIA attributes, and keyboard navigation
-- Scored report with severity-ranked issues (critical / serious / moderate / minor) and specific recommendations
-- Complete WCAG 2.1 AA checklist for implementation review
+- WCAG 2.2 AA compliance checking across color combinations, semantic HTML structure, form labels, heading hierarchy, ARIA attributes, and keyboard navigation
+- **Mobile accessibility**: touch target validation (44pt iOS HIG / 48dp Material), Dynamic Type support check, VoiceOver/TalkBack label completeness, Reduce Motion support, OLED pure-black contrast
+- Scored report (0–100) with severity-ranked issues (critical / serious / moderate / minor) and specific fix recommendations
+- Complete checklist covering WCAG 2.2 + Apple Accessibility + Android Accessibility standards, organized by category
 
-### Performance
+### Core Web Vitals & Mobile App Performance Analysis
 
-- Core Web Vitals analysis: LCP, FID, CLS with scored recommendations
-- Additional metrics: FCP, TTI, TBT
+- Core Web Vitals analysis: LCP, FID, CLS with scored recommendations and specific optimization actions
+- Additional web metrics: FCP, TTI, TBT with good/needs improvement/poor thresholds
+- **Mobile performance**: app launch time (cold/warm), frame rate analysis, memory usage, battery impact, and asset density coverage — each with platform-specific recommendations citing the right profiling tool (Xcode Instruments, Android Studio Profiler, MetricKit, Android Vitals)
 - Performance budget guidelines for JS, CSS, images, fonts, and third-party scripts
-- Specific optimization actions ranked by priority (high / medium / low)
 
-### Design References
+### Design Reference Library
 
-- Animation easing functions with timing guidance for micro, short, medium, and long durations
-- Responsive breakpoint system with mobile-first implementation patterns
-- Fluid typography scale with clamp() formulas and line-height rules
-- 8px spacing system with usage guidelines for components, sections, and layout
-- Color psychology reference by emotion and industry
-- Webflow Interactions (IX2) — triggers, actions, scroll patterns, stagger, and performance rules
-- GSAP complete reference — core API, timelines, ScrollTrigger, stagger, matchMedia, and React integration
-
----
-
-## Installation
-
-### Prerequisites
-
-- Node.js 18+
-- npm
-
-### Build
-
-```bash
-cd senior-design-director-mcp
-npm install
-npm run build
-```
-
-This compiles TypeScript to `dist/` and makes the server ready to run.
-
----
-
-## Connect to Claude Desktop
-
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "senior-design-director": {
-      "command": "node",
-      "args": ["/absolute/path/to/senior-design-director-mcp/dist/index.js"]
-    }
-  }
-}
-```
-
-Restart Claude Desktop after saving.
-
-A pre-filled config for this machine is included at [`Support/Claude/claude_desktop_config.json`](Support/Claude/claude_desktop_config.json).
-
-## Connect to Claude Code
-
-`~/.claude/settings.json` is the **global** config — adding it here makes the server available in every project, not just the current one.
-
-Add to `~/.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "senior-design-director": {
-      "command": "node",
-      "args": ["/absolute/path/to/senior-design-director-mcp/dist/index.js"]
-    }
-  }
-}
-```
+- Animation easing functions with timing guidance for micro (150ms), short (300ms), medium (500ms), and long (800ms+) durations
+- Responsive breakpoint system (320px–1600px) with mobile-first implementation patterns
+- Fluid typography scale with `clamp()` formulas and line-height rules
+- 8px spacing system with usage guidelines for components, sections, and page layout
+- Color psychology reference by emotion and industry category
+- Webflow Interactions (IX2) — trigger types, action types, scroll reveal, stagger, and scrub patterns
+- GSAP complete reference — core API, timelines, ScrollTrigger, stagger, `matchMedia` for reduced motion, and React `useGSAP` integration
+- **iOS HIG reference** — navigation patterns, Dynamic Type scale, SF Symbols, safe areas, touch targets, spring motion, and common edge cases
+- **Material Design 3 reference** — dynamic color system, Material type scale (sp), component specs (FAB, Bottom Sheet, Navigation Bar), motion easing curves, and edge cases
 
 ---
 
@@ -164,6 +190,7 @@ Runs the full 15-question discovery process and saves a structured project brief
 | `contentInventory` | string[] | Content/assets already available |
 | `contentGaps` | string[] | Content that needs to be created |
 | `pageStructure` | string[] | Pages/sections in priority order |
+| `platform` | string | `"web"` · `"mobile-ios"` · `"mobile-android"` · `"mobile-cross-platform"` · `"both"` (defaults to `"web"`) |
 | `techStackPreference` | string | Preferred technology stack |
 | `integrations` | string[] | Required integrations (CRM, payments, etc.) |
 | `cmsStrategy` | string | CMS approach |
@@ -194,10 +221,6 @@ Retrieve a saved project brief.
 #### `list-projects`
 
 List all saved project briefs.
-
-```json
-{}
-```
 
 #### `delete-project`
 
@@ -234,7 +257,7 @@ Returns all 15 discovery questions formatted for manual use or pre-brief prepara
 
 #### `generate-color-palette`
 
-Generates a color palette derived from the project brief — emotional tone, industry category, brand positioning, and any color constraints. Returns a primary palette plus two alternatives, each with hex values, RGB, usage guidance, psychological rationale, and usage guidelines.
+Generates a color palette derived from the project brief — emotional tone, industry category, brand positioning, and color constraints. Returns a primary palette plus two alternatives, each with hex values, RGB, usage guidance, psychological rationale, and application guidelines.
 
 ```json
 { "projectName": "TechFlow" }
@@ -265,13 +288,14 @@ Checks WCAG contrast ratio between any two hex colors. Returns the ratio, AA pas
 
 #### `create-design-system`
 
-Generates a complete design system from the project brief:
+Generates a complete, platform-aware design system from the project brief:
 
-- **Typography** — display font, body font, optional accent font with weights and usage rules; full modular scale from xs to 5xl with line heights and use cases
-- **Spacing** — 8px base unit with full scale
-- **Breakpoints** — mobile small through ultra-wide with column counts
-- **Motion** — easing curves and duration tokens (micro through long)
-- **Colors** — full palette derived from project brief
+- **Typography** — platform-appropriate fonts (SF Pro for iOS, Google Sans/Roboto for Android, system fonts for cross-platform, custom fonts for web); full type scale in the correct unit (pt / sp / px / rem) with line heights and use cases; Dynamic Type support for iOS
+- **Spacing** — 8pt (iOS) / 8dp (Android) / 8px (cross-platform/web) base unit with full scale
+- **Breakpoints** — (web/both only) mobile small through ultra-wide with column counts
+- **Mobile tokens** — (mobile/both only) safe area insets (Dynamic Island-aware), touch target minimums, screen size reference for all iPhone models and Android phones/tablets, native spring/motion parameters
+- **Motion** — iOS spring physics (UISpringTimingParameters), Material motion tokens, or CSS easing curves — derived from emotional tone
+- **Colors** — full palette derived from the project brief
 
 ```json
 { "projectName": "TechFlow" }
@@ -279,7 +303,7 @@ Generates a complete design system from the project brief:
 
 #### `generate-component-library`
 
-Generates specifications for UI components styled to the design system: primary/secondary/ghost buttons with states and sizing, card variants, navigation with mobile menu, contact forms, hero sections, and feature grids.
+Generates specifications for UI components appropriate for the project's platform. **Web:** primary/secondary/ghost buttons with states and sizing, card variants, navigation with mobile menu, contact forms, hero sections, and feature grids. **Mobile:** UIButton/Material Button, UITabBar/Navigation Bar, Bottom Sheet (UISheetPresentationController/BottomSheetDialogFragment), List Row (UITableView/LazyColumn), TextField with keyboard type guidance, Toast/Snackbar, FAB with scroll-hide behavior, and AsyncImage with shimmer loading — each with platform-specific states, haptic feedback guidance, safe area notes, and edge cases.
 
 ```json
 { "projectName": "TechFlow" }
@@ -317,7 +341,9 @@ Returns brand-specific copywriting guidelines derived from the project brief: he
 
 #### `check-accessibility`
 
-Analyzes a combination of color pairs, HTML structure, forms, heading hierarchy, ARIA usage, and keyboard navigation. Returns a scored report with severity-ranked issues and specific recommendations.
+Analyzes accessibility compliance for web and mobile. Pass `platform` to enable mobile-specific checks.
+
+**Web example:**
 
 ```json
 {
@@ -333,15 +359,26 @@ Analyzes a combination of color pairs, HTML structure, forms, heading hierarchy,
 }
 ```
 
-**Returns:** Score out of 100, issue list with severity, and WCAG 2.1 AA compliance summary (passes and failures).
+**Mobile example:**
+
+```json
+{
+  "platform": "mobile-ios",
+  "colors": [{ "foreground": "#1C1C1E", "background": "#FFFFFF" }],
+  "touchTargetSize": 36,
+  "minimumTapSpacing": 4,
+  "dynamicTypeSupport": false,
+  "screenReaderLabels": true,
+  "reduceMotionSupport": false,
+  "oledBackground": "#000000"
+}
+```
+
+**Returns:** Score out of 100, severity-ranked issues with platform-specific fix recommendations, and WCAG 2.2 compliance summary.
 
 #### `get-accessibility-checklist`
 
-Returns a comprehensive WCAG 2.1 AA checklist organized by category: perceivable, operable, understandable, robust — with pass/fail criteria for each item.
-
-```json
-{}
-```
+Returns a comprehensive checklist covering WCAG 2.2 AA + Apple Accessibility (VoiceOver, Dynamic Type, Reduce Motion, Large Content Viewer) + Android Accessibility (TalkBack, font scaling, animation scale) — organized by category with `must` / `should` / `recommended` priority levels.
 
 ---
 
@@ -383,6 +420,38 @@ Returns good/needs improvement/poor thresholds for LCP, FID, CLS, FCP, TTI, and 
 
 Returns recommended budgets for JS, CSS, images, fonts, third-party scripts, total page weight, HTTP requests, and LCP element — each with reasoning.
 
+#### `analyze-mobile-performance`
+
+Analyzes mobile app performance metrics against platform benchmarks. Pass measured values and receive severity-ranked issues with fix recommendations.
+
+```json
+{
+  "platform": "mobile-ios",
+  "coldLaunchMs": 820,
+  "warmLaunchMs": 550,
+  "frameRate": 48,
+  "memoryUsageMb": 180,
+  "batteryImpact": "high",
+  "assetDensities": ["@1x", "@2x"]
+}
+```
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `platform` | string | **Required.** `"mobile-ios"` · `"mobile-android"` · `"mobile-cross-platform"` |
+| `coldLaunchMs` | number | Cold launch time in ms (iOS target ≤400ms, Android ≤500ms) |
+| `warmLaunchMs` | number | Warm launch time in ms (iOS target ≤200ms, Android ≤300ms) |
+| `frameRate` | number | Measured frame rate in fps (target 60fps; ProMotion 120fps) |
+| `memoryUsageMb` | number | Active memory usage in MB |
+| `batteryImpact` | string | `"low"` · `"medium"` · `"high"` |
+| `assetDensities` | string[] | Provided asset densities, e.g. `["@1x","@2x","@3x"]` |
+
+**Returns:** Severity-ranked issues for each metric with platform-specific recommendations.
+
+#### `get-mobile-performance-targets`
+
+Returns the full benchmark table for iOS and Android: cold/warm launch targets, frame rate targets, memory budgets, and asset density requirements — each with good/needs improvement/poor thresholds.
+
 ---
 
 ## Resources Reference
@@ -400,7 +469,7 @@ Resources are accessed via the MCP resource system and return ready-to-use conte
 | `template://component/navigation` | Sticky nav with mobile menu and scroll behavior |
 | `template://component/form` | Accessible contact form with validation styles |
 
-All component templates use CSS custom properties (`--color-primary`, `--color-secondary`, etc.) that map to the generated design system.
+All component templates use CSS custom properties (`--color-primary`, `--color-secondary`, etc.) that map directly to the generated design system.
 
 ### Design Reference Resources
 
@@ -408,11 +477,13 @@ All component templates use CSS custom properties (`--color-primary`, `--color-s
 | --- | --- |
 | `reference://easing` | CSS easing functions with timing ranges (micro 150ms → long 1800ms) and GPU performance rules |
 | `reference://breakpoints` | Standard breakpoints 320px–1600px with mobile-first implementation patterns |
-| `reference://typography-scale` | Major Third scale in CSS custom properties, fluid clamp() formulas, line-height and letter-spacing rules |
+| `reference://typography-scale` | Major Third scale in CSS custom properties, fluid `clamp()` formulas, line-height and letter-spacing rules |
 | `reference://spacing` | 8px base unit scale from 4px to 128px with component, section, and layout usage guidelines |
 | `reference://color-psychology` | Color psychology by hue family and industry, saturation rules, WCAG contrast requirements |
 | `reference://webflow-animation` | Webflow IX2 trigger types, action types, scroll reveal patterns, stagger patterns, scrub patterns, performance rules, and timing by element type |
-| `reference://gsap-motion` | GSAP core API (to/from/fromTo/set), easing reference, timeline sequencing, ScrollTrigger (reveal, scrub, pin), stagger, matchMedia for reduced motion, React useGSAP integration, and design token mapping |
+| `reference://gsap-motion` | GSAP core API (to/from/fromTo/set), easing reference, timeline sequencing, ScrollTrigger (reveal, scrub, pin), stagger, `matchMedia` for reduced motion, React `useGSAP` integration, and design token mapping |
+| `reference://ios-hig` | Apple Human Interface Guidelines: NavigationStack/TabBar/Sheet patterns, Dynamic Type scale (11pt–34pt), safe area table (Dynamic Island-aware), SF Symbols usage, spring motion parameters, semantic color tokens, and 8 edge cases |
+| `reference://material-design` | Material Design 3: dynamic color roles, type scale (11sp–57sp), component specs (buttons, Top App Bar, Navigation Bar, Bottom Sheet, Cards), 4dp spacing grid, motion easing curves + duration scale, and 10 edge cases |
 
 ---
 
@@ -420,18 +491,20 @@ All component templates use CSS custom properties (`--color-primary`, `--color-s
 
 ### Phase 1 — Discovery
 
-Run `complete-project-discovery` with all answers. Use `get-discovery-questions` first if you want to prepare answers in advance.
+Run `complete-project-discovery` with all answers. Include `"platform": "mobile-ios"` (or `"mobile-android"`, `"mobile-cross-platform"`, `"both"`) to unlock platform-specific outputs in every subsequent tool.
 
-After discovery, use `get-project-brief` to review the saved brief. Use `update-project-brief` to refine any field without re-running the full discovery.
+Use `get-discovery-questions` first if you want to prepare answers in advance. After discovery, use `get-project-brief` to review the saved brief and `update-project-brief` to refine any field without re-running the full discovery.
 
 ### Phase 2 — Design System
 
 ```text
 generate-color-palette       → Review primary palette and two alternatives
 validate-color-contrast      → Check every text/background combination
-create-design-system         → Full typography, spacing, breakpoints, motion
-generate-component-library   → Component specs for implementation
+create-design-system         → Full design tokens (pt/dp for mobile, rem for web)
+generate-component-library   → Platform-native component specs for implementation
 ```
+
+For mobile, `create-design-system` emits pt (iOS) or dp (Android) tokens, Dynamic Type / sp scales, and UISpringTimingParameters / Material motion tokens. `generate-component-library` returns SwiftUI/UIKit or Compose/Material 3 component specs.
 
 ### Phase 3 — Content Strategy
 
@@ -442,15 +515,28 @@ generate-copy-guidelines       → Voice, vocabulary, headline formulas, CTA cop
 
 ### Phase 4 — Quality Assurance
 
+**Web:**
+
 ```text
-check-accessibility          → WCAG 2.1 AA compliance report
+check-accessibility          → WCAG 2.2 AA compliance report
 get-accessibility-checklist  → Complete checklist for implementation review
 analyze-performance          → Core Web Vitals analysis
 get-core-web-vitals-targets  → Good/needs improvement/poor thresholds
 get-performance-budget       → Resource budgets for JS, CSS, images, fonts
 ```
 
+**Mobile:**
+
+```text
+check-accessibility          → WCAG 2.2 + VoiceOver/TalkBack + touch targets
+get-accessibility-checklist  → 17-item mobile checklist (Dynamic Type, Reduce Motion…)
+analyze-mobile-performance   → Cold/warm launch, frame rate, memory, battery analysis
+get-mobile-performance-targets → iOS and Android benchmark tables
+```
+
 ### Phase 5 — Implementation
+
+**Web:**
 
 ```text
 template://component/*        → Ready-to-use HTML/CSS components
@@ -459,17 +545,24 @@ reference://gsap-motion       → Full GSAP reference for scroll animations
 reference://webflow-animation → Webflow IX2 patterns and performance rules
 ```
 
+**Mobile:**
+
+```text
+reference://ios-hig           → Apple HIG: navigation, Dynamic Type, safe areas, SF Symbols
+reference://material-design   → Material Design 3: dynamic color, type scale, motion
+```
+
 ---
 
 ## Project Storage
 
-Project briefs are stored as JSON files at:
+Project briefs are saved to disk at:
 
 ```text
 ~/.senior-design-director-mcp/projects/{project-name}.json
 ```
 
-Briefs are loaded into memory on server startup and written to disk on every save. This means:
+Briefs are loaded into memory on server startup and written to disk on every save:
 
 - Briefs **persist across server restarts** and new conversations
 - Multiple projects can be stored simultaneously
@@ -477,28 +570,52 @@ Briefs are loaded into memory on server startup and written to disk on every sav
 
 ---
 
+## Frequently Asked Questions
+
+**Does this work with Claude Desktop and Claude Code?**
+Yes. Add the `npx` config snippet to either `claude_desktop_config.json` (Claude Desktop) or `~/.claude/settings.json` (Claude Code) and the server is available immediately.
+
+**Do I need to install anything?**
+No. `npx` fetches and runs the package from npm automatically. Node.js 18 or later is the only prerequisite.
+
+**Does it work with MCP clients other than Claude?**
+Yes. The server uses the standard Model Context Protocol and works with any MCP-compatible client.
+
+**Where are project briefs stored?**
+Briefs are saved as JSON files at `~/.senior-design-director-mcp/projects/`. They persist across server restarts and can be backed up or inspected directly.
+
+**Can I update a brief without re-running the full discovery?**
+Yes. Use `update-project-brief` to change specific fields. The server merges the updates into the existing brief without requiring a full re-run.
+
+**Does it generate actual code or just specs?**
+Both. Design system tools return structured specifications that Claude uses to write implementation code. The `template://component/*` resources provide ready-to-use HTML/CSS components you can copy directly.
+
+**What design stack does it target?**
+The server is stack-agnostic. It outputs design tokens as CSS custom properties, component HTML/CSS, and structured JSON specs that Claude can adapt to React, Vue, Svelte, Webflow, or any other stack.
+
+**How is this different from asking Claude design questions directly?**
+Without this server, Claude has no memory of your project between conversations and gives generic answers. This server saves a detailed project brief to disk so every response is grounded in your specific audience, positioning, and goals — and context carries across sessions automatically.
+
+---
+
 ## Architecture
 
 ```text
-senior-design-director-mcp/
-├── src/
-│   ├── index.ts                   # MCP server, tool/resource registration, request handlers
-│   ├── types/
-│   │   └── index.ts               # ProjectBrief, ColorPalette, DesignSystem, AccessibilityReport, etc.
-│   ├── tools/
-│   │   ├── projectDiscovery.ts    # Discovery questions, brief builder, storage CRUD
-│   │   ├── colorPalette.ts        # Palette generation, contrast validation
-│   │   ├── designSystem.ts        # Typography, spacing, breakpoints, motion, component specs
-│   │   ├── contentArchitecture.ts # Three-act structure, page architecture, copy guidelines
-│   │   ├── accessibility.ts       # WCAG compliance checker, checklist
-│   │   └── performance.ts         # Core Web Vitals analysis, budget guidelines
-│   ├── resources/
-│   │   └── templates.ts           # Component templates and design references
-│   └── utils/
-│       └── storage.ts             # File-based persistent storage for project briefs
-├── dist/                          # Compiled output (built from src/)
-├── package.json
-└── tsconfig.json
+src/
+├── index.ts                   # MCP server, tool/resource registration, request handlers
+├── types/
+│   └── index.ts               # ProjectBrief, ColorPalette, DesignSystem, AccessibilityReport, etc.
+├── tools/
+│   ├── projectDiscovery.ts    # Discovery questions, brief builder, storage CRUD
+│   ├── colorPalette.ts        # Palette generation, contrast validation
+│   ├── designSystem.ts        # Typography, spacing, breakpoints, motion, component specs
+│   ├── contentArchitecture.ts # Three-act structure, page architecture, copy guidelines
+│   ├── accessibility.ts       # WCAG compliance checker, checklist
+│   └── performance.ts         # Core Web Vitals analysis, budget guidelines
+├── resources/
+│   └── templates.ts           # Component templates and design references
+└── utils/
+    └── storage.ts             # File-based persistent storage for project briefs
 ```
 
 All tools are pure functions that accept plain arguments and return structured JSON. The server registers each function as an MCP tool with a full JSON Schema for parameter validation.
@@ -531,14 +648,23 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 
 ## Design Principles
 
-This server implements the workflows from the Senior Design Director Agent Prompt (`senior-web-design-director.md`):
-
 - **Systems over one-offs** — every color, type choice, and spacing value connects to a system
 - **Narrative before decoration** — content architecture comes from story, not layout preference
 - **Performance is design** — slow experiences are broken experiences
 - **Accessibility as baseline** — WCAG AA compliance is the floor, not the ceiling
 - **Motion with purpose** — animation guides attention, signals state, and reinforces brand — not decoration
 - **Brief-driven decisions** — every recommendation traces back to who the site is for and what it must accomplish
+
+---
+
+## Contributing
+
+Contributions welcome. Please ensure:
+
+- TypeScript types are properly defined
+- Tools return structured JSON responses
+- Resources use appropriate MIME types
+- Code follows existing patterns
 
 ---
 

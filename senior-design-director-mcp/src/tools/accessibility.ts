@@ -1,10 +1,11 @@
 /**
  * Accessibility Checker Tool
- * Provides WCAG 2.2 AA compliance guidance and validation
+ * Provides WCAG 2.2 AA compliance guidance and validation for web and mobile
  * WCAG 2.2 published October 2023 — supersedes WCAG 2.1
+ * Mobile: Apple Accessibility / Android Accessibility / WCAG 2.2 2.5.8
  */
 
-import { AccessibilityReport } from '../types/index.js';
+import { AccessibilityReport, Platform } from '../types/index.js';
 
 type Issue = AccessibilityReport['issues'][number];
 
@@ -83,13 +84,187 @@ function checkSemanticHTML(html: string): { issues: Issue[]; penalty: number } {
   return { issues, penalty };
 }
 
+// ---------------------------------------------------------------------------
+// Mobile accessibility helpers — one concern per function
+// ---------------------------------------------------------------------------
+
+function checkTouchTargets(
+  isIOS: boolean, isAndroid: boolean, unit: string, minTarget: number,
+  touchTargetSize?: number, minimumTapSpacing?: number
+): { issues: Issue[]; penalty: number } {
+  const issues: Issue[] = [];
+  let penalty = 0;
+  const authority = isIOS ? 'Apple HIG' : 'Material Design 3 / WCAG 2.2 2.5.8';
+
+  if (touchTargetSize !== undefined && touchTargetSize < minTarget) {
+    issues.push({
+      severity: 'critical',
+      type: 'Touch Target Size',
+      description: `Touch target is ${touchTargetSize}${unit} — below the ${minTarget}${unit} minimum required by ${authority}.`,
+      recommendation: `All tappable elements must have a minimum hit area of ${minTarget}×${minTarget}${unit}. Use padding to extend the target beyond the visual boundary without affecting layout.`
+    });
+    penalty += 20;
+  } else if (touchTargetSize !== undefined && touchTargetSize < minTarget + 4) {
+    issues.push({
+      severity: 'moderate',
+      type: 'Touch Target Size',
+      description: `Touch target ${touchTargetSize}${unit} meets the minimum but recommended size is ${minTarget + 4}${unit}+ for comfortable use.`,
+      recommendation: `Aim for ${minTarget + 4}–56${unit} touch targets, especially for primary actions and navigation items.`
+    });
+    penalty += 5;
+  }
+
+  if (minimumTapSpacing !== undefined && minimumTapSpacing < 8) {
+    issues.push({
+      severity: 'serious',
+      type: 'Touch Target Spacing',
+      description: `Gap between touch targets is ${minimumTapSpacing}${unit} — too small, increases accidental activation risk.`,
+      recommendation: `Maintain at least 8${unit} between adjacent tappable elements. For destructive actions (delete, log out), use 16${unit}+ of separation.`
+    });
+    penalty += 10;
+  }
+
+  return { issues, penalty };
+}
+
+function checkTypographyScaling(isIOS: boolean, isAndroid: boolean, dynamicTypeSupport?: boolean): { issues: Issue[]; penalty: number } {
+  const issues: Issue[] = [];
+  let penalty = 0;
+
+  if (isIOS && dynamicTypeSupport === false) {
+    issues.push({
+      severity: 'serious',
+      type: 'Dynamic Type Support',
+      description: 'App does not support iOS Dynamic Type — fails Apple Accessibility guidelines and excludes users with vision impairments.',
+      recommendation: 'Use UIFont.preferredFont(forTextStyle:) and .adjustsFontForContentSizeCategory = true (UIKit), or .font(.body) with dynamic type support (SwiftUI). Never use fixed pt font sizes without Dynamic Type scaling.'
+    });
+    penalty += 15;
+  }
+
+  if (isAndroid && dynamicTypeSupport === false) {
+    issues.push({
+      severity: 'serious',
+      type: 'Font Scale Support',
+      description: 'App uses px/dp for font sizes instead of sp — ignores user font scale setting in Android accessibility.',
+      recommendation: 'Use sp (scale-independent pixels) for ALL text sizes. Never use dp or px for typography. Test with font scale 0.85×, 1.0×, 1.15×, 1.3×, 2.0×.'
+    });
+    penalty += 15;
+  }
+
+  return { issues, penalty };
+}
+
+function checkScreenReaderLabels(isIOS: boolean, screenReaderLabels?: boolean): { issues: Issue[]; penalty: number } {
+  if (screenReaderLabels !== false) return { issues: [], penalty: 0 };
+
+  if (isIOS) {
+    return {
+      issues: [{
+        severity: 'critical',
+        type: 'VoiceOver Labels',
+        description: 'Interactive elements missing VoiceOver accessibility labels — blind users cannot navigate the app.',
+        recommendation: 'Every tappable element must have .accessibilityLabel (what it is) and .accessibilityHint (what happens on tap) in SwiftUI/UIKit. Icon-only buttons MUST have labels. Test by enabling VoiceOver (triple-click side button) and navigating the entire screen.'
+      }],
+      penalty: 20
+    };
+  }
+
+  return {
+    issues: [{
+      severity: 'critical',
+      type: 'TalkBack Labels',
+      description: 'Interactive elements missing TalkBack content descriptions — blind users cannot navigate the app.',
+      recommendation: 'Every tappable View needs contentDescription (Compose: semantics { contentDescription = "..." }). ImageButtons must have contentDescription. Test by enabling TalkBack and swiping through all elements on every screen.'
+    }],
+    penalty: 20
+  };
+}
+
+function checkReduceMotionSupport(isIOS: boolean, reduceMotionSupport?: boolean): { issues: Issue[]; penalty: number } {
+  if (reduceMotionSupport !== false) return { issues: [], penalty: 0 };
+
+  if (isIOS) {
+    return {
+      issues: [{
+        severity: 'serious',
+        type: 'Reduce Motion',
+        description: 'App ignores iOS Reduce Motion setting — causes vestibular disorder symptoms for motion-sensitive users.',
+        recommendation: String.raw`Check UIAccessibility.isReduceMotionEnabled before running animations. In SwiftUI, use @Environment(\.accessibilityReduceMotion). Replace entrance/exit animations with fade (opacity) instead of translate or scale. Never autoplay looping animations without a Reduce Motion alternative.`
+      }],
+      penalty: 10
+    };
+  }
+
+  return {
+    issues: [{
+      severity: 'serious',
+      type: 'Reduce Motion',
+      description: 'App ignores Android "Remove animations" developer setting and Accessibility > Animation Control.',
+      recommendation: 'Check animator duration scale via Settings.Global.ANIMATOR_DURATION_SCALE. Use ValueAnimator.areAnimatorsEnabled() in Jetpack Compose or AnimationUtils. Provide a no-motion code path for all screen transitions and micro-interactions.'
+    }],
+    penalty: 10
+  };
+}
+
+function checkOledBackground(oledBackground?: string): { issues: Issue[]; penalty: number } {
+  if (!oledBackground) return { issues: [], penalty: 0 };
+  const lum = getLuminance(oledBackground);
+  if (lum >= 0.005 || lum === 0) return { issues: [], penalty: 0 };
+
+  return {
+    issues: [{
+      severity: 'minor',
+      type: 'OLED Pure Black',
+      description: `Background color ${oledBackground} is near-pure black — OLED displays show halation/blooming around bright text on absolute black.`,
+      recommendation: 'Use #0A0A0A–#121212 instead of #000000 for dark backgrounds on OLED. This also reduces eye strain in dark environments and matches Material Design 3 dark mode surface color.'
+    }],
+    penalty: 3
+  };
+}
+
+function checkMobileAccessibility(options: {
+  platform: Platform;
+  touchTargetSize?: number;
+  dynamicTypeSupport?: boolean;
+  reduceMotionSupport?: boolean;
+  screenReaderLabels?: boolean;
+  oledBackground?: string;
+  minimumTapSpacing?: number;
+}): { issues: Issue[]; penalty: number } {
+  const isIOS = options.platform === 'mobile-ios' || options.platform === 'both';
+  const isAndroid = options.platform === 'mobile-android' || options.platform === 'both';
+  const unit = isAndroid && !isIOS ? 'dp' : 'pt';
+  const minTarget = isAndroid && !isIOS ? 48 : 44;
+
+  const results = [
+    checkTouchTargets(isIOS, isAndroid, unit, minTarget, options.touchTargetSize, options.minimumTapSpacing),
+    checkTypographyScaling(isIOS, isAndroid, options.dynamicTypeSupport),
+    checkScreenReaderLabels(isIOS, options.screenReaderLabels),
+    checkReduceMotionSupport(isIOS, options.reduceMotionSupport),
+    checkOledBackground(options.oledBackground),
+  ];
+
+  return {
+    issues: results.flatMap(r => r.issues),
+    penalty: results.reduce((sum, r) => sum + r.penalty, 0),
+  };
+}
+
 export function checkAccessibility(options: {
+  platform?: Platform;
   colors?: { foreground: string; background: string }[];
   semanticHTML?: string;
   formLabels?: boolean;
   headingHierarchy?: string[];
   ariaLabels?: boolean;
   keyboardNav?: boolean;
+  // Mobile-specific options
+  touchTargetSize?: number;
+  dynamicTypeSupport?: boolean;
+  reduceMotionSupport?: boolean;
+  screenReaderLabels?: boolean;
+  oledBackground?: string;
+  minimumTapSpacing?: number;
 }): {
   success: boolean;
   message: string;
@@ -127,6 +302,21 @@ export function checkAccessibility(options: {
 
   if (options.semanticHTML) {
     const r = checkSemanticHTML(options.semanticHTML);
+    issues.push(...r.issues);
+    score -= r.penalty;
+  }
+
+  const isMobile = options.platform && options.platform !== 'web';
+  if (isMobile) {
+    const r = checkMobileAccessibility({
+      platform: options.platform as Platform,
+      touchTargetSize: options.touchTargetSize,
+      dynamicTypeSupport: options.dynamicTypeSupport,
+      reduceMotionSupport: options.reduceMotionSupport,
+      screenReaderLabels: options.screenReaderLabels,
+      oledBackground: options.oledBackground,
+      minimumTapSpacing: options.minimumTapSpacing,
+    });
     issues.push(...r.issues);
     score -= r.penalty;
   }
@@ -296,6 +486,28 @@ export function getAccessibilityChecklist(): {
           { check: 'Text can be zoomed to 200% without loss of functionality', wcagCriterion: '1.4.4 Resize Text', priority: 'must' },
           { check: 'Help mechanisms (chat, contact info) appear in consistent location across pages', wcagCriterion: '3.2.6 Consistent Help — NEW in 2.2', priority: 'must' },
           { check: 'Form inputs use appropriate input types (email, tel, number)', wcagCriterion: '1.3.5 Identify Input Purpose', priority: 'should' }
+        ]
+      },
+      {
+        category: 'Mobile App Accessibility (iOS & Android)',
+        items: [
+          { check: 'Touch targets minimum 44×44pt (iOS HIG) / 48×48dp (Android Material) — never smaller', wcagCriterion: 'WCAG 2.2 2.5.8 Target Size + Apple HIG + Material Design 3', priority: 'must' },
+          { check: 'At least 8pt/8dp spacing between adjacent touch targets to prevent accidental taps', wcagCriterion: 'WCAG 2.2 2.5.8 + Material Design 3 spacing guidelines', priority: 'must' },
+          { check: 'iOS: Use UIFont.preferredFont(forTextStyle:) / SwiftUI .font(.body) — supports Dynamic Type', wcagCriterion: 'Apple Accessibility — Dynamic Type (WCAG 1.4.4 equivalent)', priority: 'must' },
+          { check: 'Android: Use sp units for ALL font sizes — never dp or px for typography', wcagCriterion: 'Android Accessibility — Font Scaling (WCAG 1.4.4 equivalent)', priority: 'must' },
+          { check: 'iOS: Every interactive element has .accessibilityLabel + .accessibilityHint in SwiftUI/UIKit', wcagCriterion: 'Apple VoiceOver — WCAG 4.1.2 Name, Role, Value', priority: 'must' },
+          { check: 'Android: Every interactive View has contentDescription or semantic role in Compose', wcagCriterion: 'Android TalkBack — WCAG 4.1.2 Name, Role, Value', priority: 'must' },
+          { check: 'iOS: Check UIAccessibility.isReduceMotionEnabled — replace translate/scale animations with fade', wcagCriterion: 'Apple Accessibility — Reduce Motion (WCAG 2.3.3 Animation)', priority: 'must' },
+          { check: 'Android: Check ValueAnimator.areAnimatorsEnabled() — provide no-motion code path for all transitions', wcagCriterion: 'Android Accessibility — Animation Scale (WCAG 2.3.3 Animation)', priority: 'must' },
+          { check: 'Test entire app with VoiceOver (iOS: triple-click side button) — every screen, every state', wcagCriterion: 'Apple VoiceOver end-to-end validation', priority: 'must' },
+          { check: 'Test entire app with TalkBack (Android: Volume Up+Down or 3-finger swipe) — every screen, every state', wcagCriterion: 'Android TalkBack end-to-end validation', priority: 'must' },
+          { check: 'Use native OS components (UIButton, UITableView, Material Components) — they are accessible by default', wcagCriterion: 'Apple HIG + Material Design 3 — accessibility built-in', priority: 'should' },
+          { check: 'Custom drawn controls use .accessibilityActivate() / semantics { onClick() } to expose tap gesture', wcagCriterion: 'Apple + Android custom accessibility action patterns', priority: 'must' },
+          { check: 'Dynamic content updates announced via UIAccessibility.post(.announcement) (iOS) / accessibilityLiveRegion (Android)', wcagCriterion: 'WCAG 4.1.3 Status Messages', priority: 'should' },
+          { check: 'Large Content Viewer: elements under 44pt support UILargeContentViewerItem (iOS 13+)', wcagCriterion: 'Apple Large Content Viewer — Accessibility Size category support', priority: 'recommended' },
+          { check: 'Dark background: use #0A0A0A–#121212 instead of #000000 to prevent OLED halation/blooming', wcagCriterion: 'Material Design 3 dark mode surface + eye strain reduction', priority: 'recommended' },
+          { check: 'Safe areas: all interactive content accounts for notch, Dynamic Island, home indicator insets', wcagCriterion: 'Apple HIG — Safe Area Layout Guides', priority: 'must' },
+          { check: 'Test with extra-large accessibility font size — ensure no text truncation or layout overflow', wcagCriterion: 'WCAG 1.4.4 Resize Text — mobile equivalent', priority: 'must' }
         ]
       }
     ]
