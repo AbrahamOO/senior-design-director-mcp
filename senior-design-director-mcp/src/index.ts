@@ -40,6 +40,14 @@ import {
   getProjectBriefTemplate,
   getComponentTemplate,
 } from './resources/templates.js';
+import { runInstaller } from './install.js';
+
+// When invoked as `npx senior-design-director-mcp install`, run the installer
+// instead of starting the MCP server.
+if (process.argv[2] === 'install') {
+  await runInstaller();
+  process.exit(0);
+}
 
 const server = new McpServer(
   {

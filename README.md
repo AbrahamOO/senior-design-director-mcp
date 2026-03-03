@@ -1,13 +1,13 @@
-# Senior Design Director MCP Server — AI-Powered Design System Generator for Claude
+# Senior Design Director MCP
 
 [![npm version](https://img.shields.io/npm/v/senior-design-director-mcp)](https://www.npmjs.com/package/senior-design-director-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/senior-design-director-mcp)](https://www.npmjs.com/package/senior-design-director-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-**Senior Design Director MCP** is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives Claude the capabilities of a senior creative director. It runs a structured 15-question project discovery process, generates complete design systems for **web and premium mobile apps** (iOS, Android, React Native, Flutter), validates WCAG accessibility, analyzes Core Web Vitals and native app performance, and delivers production-ready component templates — all grounded in a persistent project brief so every design decision stays consistent.
+Professional design intelligence for any AI coding agent — works with **Claude Code**, **Cursor**, **Windsurf**, **OpenAI Codex**, **Claude Desktop**, and any MCP-compatible client. No installation required — runs via `npx`.
 
-Works with **Claude Desktop**, **Claude Code**, and any MCP-compatible AI client. No installation required — runs via `npx`.
+**Senior Design Director MCP** is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives your AI agent the capabilities of a senior creative director. It runs a structured 15-question project discovery process, generates complete design systems for **web and premium mobile apps** (iOS, Android, React Native, Flutter), validates WCAG accessibility, analyzes Core Web Vitals and native app performance, and delivers production-ready component templates — all grounded in a persistent project brief so every design decision stays consistent.
 
 ---
 
@@ -26,7 +26,29 @@ The result is design direction that's specific to your project, not recycled fro
 
 ## Quick Start
 
-No installation required. Add the server to your MCP client config and it starts automatically via `npx`.
+No installation required. Pick your client below — just add the config block and the server starts automatically via `npx` on first use.
+
+### One-command auto-installer
+
+Run this once to configure **all detected MCP clients** on your machine automatically:
+
+```bash
+npx senior-design-director-mcp install
+```
+
+This detects Claude Desktop, Claude Code, Cursor, Windsurf, and Codex — and writes the correct config for each one it finds. Restart any open clients after running.
+
+---
+
+### Install as an Agent Skill (Claude Code, Cursor, Codex, and more)
+
+Install the companion skill — teaches any compatible agent the full workflow for using this server:
+
+```bash
+npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director
+```
+
+---
 
 ### Claude Desktop
 
@@ -46,9 +68,21 @@ No installation required. Add the server to your MCP client config and it starts
 
 Restart Claude Desktop after saving.
 
-### Claude Code
+---
 
-Add to `~/.claude/settings.json` to make it available globally across all projects:
+### Claude Code (CLI)
+
+```bash
+claude mcp add senior-design-director -- npx -y senior-design-director-mcp
+```
+
+Or add manually to `~/.claude.json` (global) or `.mcp.json` (project-level), using the same JSON format as Claude Desktop above.
+
+---
+
+### Cursor
+
+Open **Settings → Cursor Settings → MCP**, click **Add new MCP server**, and paste:
 
 ```json
 {
@@ -61,13 +95,61 @@ Add to `~/.claude/settings.json` to make it available globally across all projec
 }
 ```
 
-### Other MCP Clients
+---
 
-Any MCP-compatible client can run this server with:
+### Windsurf
+
+**macOS/Linux:** `~/.codeium/windsurf/mcp_config.json`
+**Windows:** `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
+
+Or via **Cascade panel → MCP icon → Add server**:
+
+```json
+{
+  "mcpServers": {
+    "senior-design-director": {
+      "command": "npx",
+      "args": ["-y", "senior-design-director-mcp"]
+    }
+  }
+}
+```
+
+---
+
+### Codex (OpenAI)
+
+Codex uses TOML format. Add to `~/.codex/config.toml` (global) or `.codex/config.toml` (project):
+
+```toml
+[mcp_servers.senior-design-director]
+command = "npx"
+args = ["-y", "senior-design-director-mcp"]
+```
+
+Or via the Codex CLI:
 
 ```bash
-npx -y senior-design-director-mcp
+codex mcp add senior-design-director -- npx -y senior-design-director-mcp
 ```
+
+---
+
+### Any other MCP-compatible client
+
+Use the same pattern — run `npx -y senior-design-director-mcp` as the server command. The `-y` flag auto-confirms the package download on first run.
+
+---
+
+### Global install (optional)
+
+If you prefer a permanent install instead of `npx`:
+
+```bash
+npm install -g senior-design-director-mcp
+```
+
+Then use `senior-design-director-mcp` as the command (no `npx` or `args` needed).
 
 ---
 
@@ -573,7 +655,7 @@ Briefs are loaded into memory on server startup and written to disk on every sav
 ## Frequently Asked Questions
 
 **Does this work with Claude Desktop and Claude Code?**
-Yes. Add the `npx` config snippet to either `claude_desktop_config.json` (Claude Desktop) or `~/.claude/settings.json` (Claude Code) and the server is available immediately.
+Yes. Add the `npx` config snippet to either `claude_desktop_config.json` (Claude Desktop) or run `claude mcp add senior-design-director -- npx -y senior-design-director-mcp` (Claude Code) and the server is available immediately.
 
 **Do I need to install anything?**
 No. `npx` fetches and runs the package from npm automatically. Node.js 18 or later is the only prerequisite.
