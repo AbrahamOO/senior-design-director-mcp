@@ -1,6 +1,8 @@
-# Senior Design Director MCP Server
+# Senior Design Director MCP
 
-A Model Context Protocol (MCP) server that provides professional design guidance for web and premium mobile apps. Covers project discovery, platform-aware design system generation, component libraries, accessibility, performance, and curated reference material — grounded in world-class design studio standards.
+Professional design intelligence for any AI coding agent — works with **Claude Code**, **Cursor**, **Windsurf**, **OpenAI Codex**, **Claude Desktop**, and any MCP-compatible client.
+
+Project discovery, design systems, color palettes, component libraries, accessibility (WCAG 2.2 AA), Core Web Vitals, and platform-specific guidance for web, iOS, Android, and cross-platform apps.
 
 ## Features
 
@@ -101,7 +103,7 @@ Restart Claude Desktop after saving.
 claude mcp add senior-design-director -- npx -y senior-design-director-mcp
 ```
 
-Or add manually to `~/.claude/claude_desktop_config.json` (same format as Claude Desktop above).
+Or add manually to `~/.claude.json` (global) or `.mcp.json` (project-level), using the same JSON format as Claude Desktop above.
 
 ---
 
@@ -124,7 +126,10 @@ Open **Settings → Cursor Settings → MCP**, click **Add new MCP server**, and
 
 ### Windsurf
 
-Add to `~/.windsurf/mcp_config.json` (or via **Settings → MCP Servers**):
+**macOS/Linux**: `~/.codeium/windsurf/mcp_config.json`
+**Windows**: `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
+
+Or via **Cascade panel → MCP icon → Add server**:
 
 ```json
 {
@@ -141,17 +146,18 @@ Add to `~/.windsurf/mcp_config.json` (or via **Settings → MCP Servers**):
 
 ### Codex (OpenAI)
 
-Add to your Codex MCP configuration:
+Codex uses TOML format. Add to `~/.codex/config.toml` (global) or `.codex/config.toml` (project):
 
-```json
-{
-  "mcpServers": {
-    "senior-design-director": {
-      "command": "npx",
-      "args": ["-y", "senior-design-director-mcp"]
-    }
-  }
-}
+```toml
+[mcp_servers.senior-design-director]
+command = "npx"
+args = ["-y", "senior-design-director-mcp"]
+```
+
+Or via the Codex CLI:
+
+```bash
+codex mcp add senior-design-director -- npx -y senior-design-director-mcp
 ```
 
 ---
