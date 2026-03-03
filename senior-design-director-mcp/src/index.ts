@@ -9,6 +9,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { createRequire } from 'node:module';
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
 
 import {
   completeProjectDiscovery,
@@ -41,7 +44,7 @@ import {
 const server = new McpServer(
   {
     name: 'senior-design-director-mcp',
-    version: '1.2.1',
+    version,
   },
   {
     capabilities: {
