@@ -41,7 +41,7 @@ import {
 const server = new McpServer(
   {
     name: 'senior-design-director-mcp',
-    version: '1.2.0',
+    version: '1.2.1',
   },
   {
     capabilities: {
