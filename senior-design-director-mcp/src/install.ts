@@ -138,17 +138,17 @@ function installCodex(): { installed: boolean; path: string; note?: string } {
 function installSkill(): { installed: boolean; note?: string } {
   const result = spawnSync(
     'npx',
-    ['skills', 'add', 'https://github.com/AbrahamOO/senior-design-director-mcp', '--skill', 'senior-design-director'],
-    { stdio: 'pipe', encoding: 'utf8', timeout: 30_000 },
+    ['skills', 'add', 'https://github.com/AbrahamOO/senior-design-director-mcp', '--skill', 'senior-design-director', '--yes', '--global'],
+    { stdio: 'pipe', encoding: 'utf8', timeout: 60_000 },
   );
 
   if (result.signal === 'SIGTERM' || (result.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT') {
-    return { installed: false, note: 'skills CLI timed out after 30 s — run manually: npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director' };
+    return { installed: false, note: 'skills CLI timed out — run manually: npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director --yes --global' };
   }
 
   if (result.error || result.status !== 0) {
     const reason = result.error?.message ?? result.stderr?.trim() ?? 'unknown error';
-    return { installed: false, note: `skills CLI not found or failed — run manually: npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director\n     (${reason})` };
+    return { installed: false, note: `skills CLI not found or failed — run manually: npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director --yes --global\n     (${reason})` };
   }
 
   return { installed: true };
