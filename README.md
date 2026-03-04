@@ -30,23 +30,13 @@ No installation required. Pick your client below, just add the config block and 
 
 ### One-command auto-installer
 
-Run this once to configure **all detected MCP clients** on your machine automatically:
+Run this once to configure **all detected MCP clients** and install the agent skill simultaneously:
 
 ```bash
 npx senior-design-director-mcp install
 ```
 
-This detects Claude Desktop, Claude Code, Cursor, Windsurf, and Codex, and writes the correct config for each one it finds. Restart any open clients after running.
-
----
-
-### Install as an Agent Skill (Claude Code, Cursor, Codex, and more)
-
-Install the companion skill, teaches any compatible agent the full workflow for using this server:
-
-```bash
-npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director
-```
+This detects Claude Desktop, Claude Code, Cursor, Windsurf, and Codex, writes the correct MCP config for each one it finds, and installs the companion agent skill that teaches your agent the full design workflow. Restart any open clients after running.
 
 ---
 
