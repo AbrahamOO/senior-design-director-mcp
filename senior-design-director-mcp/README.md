@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-Professional design intelligence for any AI coding agent, works with **Claude Code**, **Cursor**, **Windsurf**, **OpenAI Codex**, **Claude Desktop**, and any MCP-compatible client. No installation required, runs via `npx`.
+Professional design intelligence for any AI coding agent, works with **Claude Code**, **Cursor**, **Windsurf**, **OpenAI Codex**, **Claude Desktop**, and any MCP-compatible client.
 
 **Senior Design Director MCP** is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives your AI agent the capabilities of a senior creative director. It runs a structured 15-question project discovery process, generates complete design systems for **web and premium mobile apps** (iOS, Android, React Native, Flutter), validates WCAG accessibility, analyzes Core Web Vitals and native app performance, and delivers production-ready component templates, all grounded in a persistent project brief so every design decision stays consistent.
 
@@ -26,17 +26,25 @@ The result is design direction that's specific to your project, not recycled fro
 
 ## Quick Start
 
-No installation required. Pick your client below, just add the config block and the server starts automatically via `npx` on first use.
+### One-command setup (recommended)
 
-### One-command auto-installer
-
-Run this once to configure **all detected MCP clients** and install the agent skill simultaneously:
+Run this once to configure all your MCP clients (Claude Code, Claude Desktop, Cursor, Windsurf, Codex) and install the agent skill:
 
 ```bash
 npx senior-design-director-mcp install
 ```
 
-This detects Claude Desktop, Claude Code, Cursor, Windsurf, and Codex, writes the correct MCP config for each one it finds, and installs the companion agent skill that teaches your agent the full design workflow. Restart any open clients after running.
+Detects which clients are installed, writes the correct config for each, and installs the agent skill. Restart any open clients after running.
+
+---
+
+### Manual setup
+
+Use the sections below if you prefer to configure a specific client yourself. Note: manual setup only registers the MCP server. To also install the agent skill, run:
+
+```bash
+npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director
+```
 
 ---
 
@@ -645,10 +653,10 @@ Briefs are loaded into memory on server startup and written to disk on every sav
 ## Frequently Asked Questions
 
 **Does this work with Claude Desktop and Claude Code?**
-Yes. Add the `npx` config snippet to either `claude_desktop_config.json` (Claude Desktop) or run `claude mcp add senior-design-director -- npx -y senior-design-director-mcp` (Claude Code) and the server is available immediately.
+Yes. Run `npx senior-design-director-mcp install` and it configures both automatically. For manual setup, see the Quick Start sections above.
 
-**Do I need to install anything?**
-No. `npx` fetches and runs the package from npm automatically. Node.js 18 or later is the only prerequisite.
+**Do I need to install anything permanently?**
+No. Run `npx senior-design-director-mcp install` once to configure your clients. After that, the server starts automatically via npx each time your client connects — nothing is permanently installed. Node.js 18 or later is the only prerequisite.
 
 **Does it work with MCP clients other than Claude?**
 Yes. The server uses the standard Model Context Protocol and works with any MCP-compatible client.
