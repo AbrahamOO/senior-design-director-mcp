@@ -8,6 +8,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, dirname } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const SERVER_CONFIG = {
   command: 'npx',
@@ -132,6 +133,27 @@ function installCodex(): { installed: boolean; path: string; note?: string } {
   return { installed: true, path: configPath };
 }
 
+// ─── Skill installer ─────────────────────────────────────────────────────────
+
+function installSkill(): { installed: boolean; note?: string } {
+  const result = spawnSync(
+    'npx',
+    ['skills', 'add', 'https://github.com/AbrahamOO/senior-design-director-mcp', '--skill', 'senior-design-director'],
+    { stdio: 'pipe', encoding: 'utf8', timeout: 30_000 },
+  );
+
+  if (result.signal === 'SIGTERM' || (result.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT') {
+    return { installed: false, note: 'skills CLI timed out after 30 s — run manually: npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director' };
+  }
+
+  if (result.error || result.status !== 0) {
+    const reason = result.error?.message ?? result.stderr?.trim() ?? 'unknown error';
+    return { installed: false, note: `skills CLI not found or failed — run manually: npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director\n     (${reason})` };
+  }
+
+  return { installed: true };
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 export async function runInstaller(): Promise<void> {
@@ -166,6 +188,15 @@ export async function runInstaller(): Promise<void> {
   }
 
   console.log(`\n  Done. ${successCount} client(s) configured, ${skipCount} skipped.\n`);
+
+  // ─── Install Agent Skill ────────────────────────────────────────────────
+  console.log('  Installing agent skill...\n');
+  const skillResult = installSkill();
+  if (skillResult.installed) {
+    console.log('  ✓  Agent Skill (senior-design-director)\n');
+  } else {
+    console.log(`  –  Agent Skill  ${skillResult.note ?? ''}\n`);
+  }
 
   if (successCount > 0) {
     console.log('  Next steps:');

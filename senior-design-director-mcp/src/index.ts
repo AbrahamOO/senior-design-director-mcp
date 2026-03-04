@@ -225,8 +225,8 @@ server.registerTool(
   {
     description: 'Check WCAG color contrast ratio between foreground and background colors',
     inputSchema: {
-      foreground: z.string().describe('Foreground color (hex)'),
-      background: z.string().describe('Background color (hex)'),
+      foreground: z.string().regex(/^#[0-9a-fA-F]{6}$/).describe('Foreground color (hex, e.g. #1a1a2e)'),
+      background: z.string().regex(/^#[0-9a-fA-F]{6}$/).describe('Background color (hex, e.g. #ffffff)'),
     },
   },
   (args) => {
@@ -305,12 +305,12 @@ server.registerTool(
       colors: z
         .array(
           z.object({
-            foreground: z.string(),
-            background: z.string(),
+            foreground: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+            background: z.string().regex(/^#[0-9a-fA-F]{6}$/),
           })
         )
         .optional()
-        .describe('Color combinations to check (works for all platforms)'),
+        .describe('Color combinations to check — hex format required, e.g. { foreground: "#1a1a2e", background: "#ffffff" }'),
       semanticHTML: z.string().optional().describe('HTML to check for semantic structure (web only)'),
       formLabels: z.boolean().optional().describe('Are form labels properly associated? (web only)'),
       headingHierarchy: z
@@ -344,8 +344,9 @@ server.registerTool(
         .describe('Does the app respond to iOS Reduce Motion / Android Disable Animations setting?'),
       oledBackground: z
         .string()
+        .regex(/^#[0-9a-fA-F]{6}$/)
         .optional()
-        .describe('Dark background hex color to check for OLED pure-black halation issues'),
+        .describe('Dark background hex color (e.g. #000000) to check for OLED pure-black halation issues'),
     },
   },
   (args) => {
