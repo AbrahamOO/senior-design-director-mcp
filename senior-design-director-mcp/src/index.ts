@@ -40,6 +40,7 @@ import {
   getProjectBriefTemplate,
   getComponentTemplate,
 } from './resources/templates.js';
+import { generateImmersive3DExperience } from './tools/immersive3d.js';
 import { runInstaller } from './install.js';
 
 // When invoked as `npx senior-design-director-mcp install`, run the installer
@@ -475,6 +476,41 @@ server.registerTool(
   },
   () => {
     return { content: [{ type: 'text', text: JSON.stringify(DISCOVERY_QUESTIONS, null, 2) }] };
+  }
+);
+
+server.registerTool(
+  'generate-3d-experience',
+  {
+    description:
+      'Generate a fully immersive, scroll-driven 3D web experience using React Three Fiber, GSAP ScrollTrigger, and WebGL shaders. Outputs production-ready code: scene architecture, CatmullRom camera spline, scroll→animation mapping, postprocessing pipeline, and mobile fallback.',
+    inputSchema: {
+      concept: z.string().describe('Theme or narrative of the 3D world (e.g. "deep ocean bioluminescence", "brutalist concrete city", "crystalline neural network")'),
+      sections: z.number().min(3).max(7).optional().default(5).describe('Number of scroll scenes (3–7). Each section maps to a camera waypoint on the spline.'),
+      style: z
+        .enum(['cosmic', 'architectural', 'organic', 'minimal', 'brutalist', 'liquid', 'crystalline'])
+        .optional()
+        .default('cosmic')
+        .describe('Visual style — drives geometry choice, lighting mood, and camera choreography'),
+      primaryColor: z.string().optional().default('#6c63ff').describe('Brand hex color used for geometry, particles, and emissive lighting'),
+      framework: z
+        .enum(['react-three-fiber', 'vanilla-threejs'])
+        .optional()
+        .default('react-three-fiber')
+        .describe('Output framework'),
+      includeShaders: z.boolean().optional().default(false).describe('Include custom GLSL vertex/fragment displacement shaders'),
+    },
+  },
+  (args) => {
+    const result = generateImmersive3DExperience(
+      args.concept,
+      args.sections ?? 5,
+      (args.style ?? 'cosmic') as any,
+      args.primaryColor ?? '#6c63ff',
+      (args.framework ?? 'react-three-fiber') as any,
+      args.includeShaders ?? false,
+    );
+    return { content: [{ type: 'text', text: result }] };
   }
 );
 

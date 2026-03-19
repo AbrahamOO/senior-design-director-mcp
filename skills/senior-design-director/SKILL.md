@@ -1,17 +1,17 @@
 ---
 name: senior-design-director
-description: Senior design director guidance for web and mobile projects — project discovery, design systems, color palettes, accessibility, performance, and platform-specific design (iOS HIG, Material Design 3). Use when working on any UI/UX design task, building a design system, validating accessibility, analyzing web performance, or designing for iOS or Android.
+description: Senior design director guidance for web, mobile, and immersive 3D projects — project discovery, design systems, color palettes, accessibility, performance, platform-specific design (iOS HIG, Material Design 3), and scroll-driven 3D web experiences. Use when working on any UI/UX design task, building a design system, validating accessibility, analyzing web performance, designing for iOS or Android, or building cinematic 3D scroll experiences.
 license: MIT
 metadata:
   author: AbrahamOO
-  version: "1.1.0"
+  version: "1.2.0"
   mcp-package: senior-design-director-mcp
 compatibility: Requires the senior-design-director-mcp MCP server to be running. Install via npx -y senior-design-director-mcp.
 ---
 
 # Senior Design Director
 
-This skill activates world-class design director thinking for any UI/UX project. It pairs with the `senior-design-director-mcp` MCP server, which provides the underlying tools.
+This skill activates world-class design director thinking for any UI/UX or immersive 3D project. It pairs with the `senior-design-director-mcp` MCP server, which provides the underlying tools.
 
 ## MCP Server Setup
 
@@ -78,6 +78,19 @@ Use `get-accessibility-checklist` for the full WCAG 2.2 AA + Apple + Android che
 
 **Mobile**: `analyze-mobile-performance` → `get-mobile-performance-targets`
 
+### Step 7 — Immersive 3D (optional)
+
+When the project calls for a cinematic scroll-driven 3D web experience:
+
+Run `generate-3d-experience` with:
+- `concept` — the 3D world narrative (e.g. "crystalline neural network", "deep ocean bioluminescence")
+- `style` — `cosmic` | `architectural` | `organic` | `minimal` | `brutalist` | `liquid` | `crystalline`
+- `sections` — 3–7 scroll scenes
+- `primaryColor` — brand hex
+- `includeShaders` — `true` for GLSL vertex displacement shaders
+
+Output includes: React Three Fiber scene, CatmullRom camera spline, scroll→animation hook, postprocessing pipeline, and mobile fallback.
+
 ---
 
 ## Tool Reference
@@ -121,6 +134,11 @@ Use `get-accessibility-checklist` for the full WCAG 2.2 AA + Apple + Android che
 | `analyze-mobile-performance` | Given real app metrics (launch time, fps, memory) |
 | `get-mobile-performance-targets` | Reference — iOS and Android benchmark tables |
 
+### Immersive 3D
+| Tool | When to use |
+|------|------------|
+| `generate-3d-experience` | Building a scroll-driven cinematic 3D web experience |
+
 ---
 
 ## Design Resources (MCP Resources)
@@ -157,6 +175,7 @@ Apply these to every recommendation and every piece of code written during a des
 - **Systems thinking** — Tokens and components, not one-off decisions
 - **Narrative architecture** — Page/screen structure follows story arc, not layout convention
 - **Motion with purpose** — Animation guides, clarifies, or delights — never decorates
+- **Depth over decoration** — 3D experiences earn every polygon; geometry serves the narrative
 
 ---
 
@@ -181,3 +200,9 @@ Apply these to every recommendation and every piece of code written during a des
 - Breakpoints: 320 / 480 / 768 / 1024 / 1280 / 1536px
 - Spacing: 8px base unit (4, 8, 12, 16, 24, 32, 48, 64, 96, 128px)
 - Focus management: visible focus ring always present
+
+### 3D Web
+- Camera: CatmullRom spline, lerp factor 0.05 for cinematic inertia
+- Scroll mapping: `useRef` (not `useState\`) for progress — avoids re-renders
+- Performance: `<AdaptiveDpr pixelated />` + disable Bloom on mobile
+- Reduced motion: freeze camera at section 0, disable all rotation

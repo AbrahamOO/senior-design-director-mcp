@@ -7,7 +7,7 @@
 
 Professional design intelligence for any AI coding agent, works with **Claude Code**, **Cursor**, **Windsurf**, **OpenAI Codex**, **Claude Desktop**, and any MCP-compatible client.
 
-**Senior Design Director MCP** is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives your AI agent the capabilities of a senior creative director. It runs a structured 15-question project discovery process, generates complete design systems for **web and premium mobile apps** (iOS, Android, React Native, Flutter), validates WCAG accessibility, analyzes Core Web Vitals and native app performance, and delivers production-ready component templates, all grounded in a persistent project brief so every design decision stays consistent.
+**Senior Design Director MCP** is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives your AI agent the capabilities of a senior creative director. It runs a structured 15-question project discovery process, generates complete design systems for **web and premium mobile apps** (iOS, Android, React Native, Flutter), validates WCAG accessibility, analyzes Core Web Vitals and native app performance, delivers production-ready component templates, and generates **fully immersive scroll-driven 3D web experiences** using React Three Fiber and WebGL — all grounded in a persistent project brief so every design decision stays consistent.
 
 ---
 
@@ -21,6 +21,7 @@ The result is design direction that's specific to your project, not recycled fro
 - **Systematic**: color palettes, type scales, spacing, motion, and components are all connected to one design system
 - **Standards-compliant**: WCAG 2.1 AA accessibility and Core Web Vitals are built into the workflow, not added at the end
 - **Persistent**: project briefs are saved to disk and survive server restarts, so context carries across every conversation
+- **Cinematic**: when the project calls for it, generate scroll-driven 3D experiences — real depth on the Z-axis, not parallax
 
 ---
 
@@ -182,6 +183,7 @@ Rather than answering generic design questions, this MCP server operates like a 
 | React Native apps | Cross-platform | Platform-branched fonts, logical px spacing, shared motion tokens, safe area inset values |
 | Flutter apps | Cross-platform | Platform-aware type scale, Material/Cupertino hybrid patterns, shared spacing system |
 | Web + Mobile | Both | Full web breakpoints AND native mobile tokens, single design brief drives both surfaces |
+| Immersive 3D website | Web | Scroll-driven 3D scene, CatmullRom camera spline, R3F + postprocessing, WebGL shaders |
 
 ### AI-Powered Color & Design System Generation
 
@@ -196,6 +198,17 @@ Rather than answering generic design questions, this MCP server operates like a 
 - Three-act narrative structure mapping scroll position to emotional journey (Problem → Transformation → Outcome)
 - Page structure recommendations tied to business objectives and conversion goals
 - Brand voice and copywriting guidelines, headline formulas, vocabulary, CTA copy patterns, and before/after examples, all derived from brand positioning
+
+### Immersive 3D Web Experience Generation
+
+- Generates a complete scroll-driven cinematic 3D experience using **React Three Fiber**, **Three.js**, and **@react-three/postprocessing**
+- Seven visual styles: `cosmic`, `architectural`, `organic`, `minimal`, `brutalist`, `liquid`, `crystalline` — each with its own geometry, lighting choreography, and camera language
+- Camera follows a **CatmullRom spline** with per-section waypoints; scroll progress (0→1) drives the `t` parameter via a ref-based hook (zero re-renders)
+- Smooth cinematic camera via `lerp` at factor 0.05; look-ahead targeting for natural orientation
+- Per-scene: object interactions (scale, rotation, morph, particle bursts), lighting directives (spotlights, point lights, hemi), postprocessing (Bloom + ChromaticAberration)
+- Optional **GLSL vertex displacement shaders** for scroll-reactive geometry deformation
+- Performance-first: `<AdaptiveDpr>`, instancing guidance, LOD strategy, and zero-`useState` scroll tracking
+- `prefers-reduced-motion` fallback: camera frozen at section 0, all rotation disabled
 
 ### WCAG Accessibility & Mobile Accessibility Compliance
 
@@ -534,6 +547,47 @@ Returns the full benchmark table for iOS and Android: cold/warm launch targets, 
 
 ---
 
+### Immersive 3D Tools
+
+#### `generate-3d-experience`
+
+Generates a production-ready scroll-driven 3D web experience. Outputs a complete React Three Fiber implementation: camera spline, scene components, scroll hook, postprocessing pipeline, CSS layout, and optional GLSL shaders.
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `concept` | string | required | Theme/narrative of the 3D world (e.g. `"crystalline neural network"`, `"brutalist concrete city"`) |
+| `sections` | number (3–7) | `5` | Number of scroll scenes; each maps to a camera waypoint |
+| `style` | string | `"cosmic"` | `cosmic` · `architectural` · `organic` · `minimal` · `brutalist` · `liquid` · `crystalline` |
+| `primaryColor` | string | `"#6c63ff"` | Brand hex used for geometry, particles, and emissive lighting |
+| `framework` | string | `"react-three-fiber"` | `react-three-fiber` · `vanilla-threejs` |
+| `includeShaders` | boolean | `false` | Include custom GLSL vertex/fragment displacement shaders |
+
+**Example:**
+
+```json
+{
+  "concept": "deep ocean bioluminescence",
+  "style": "liquid",
+  "sections": 5,
+  "primaryColor": "#00d4ff",
+  "includeShaders": true
+}
+```
+
+**Returns:**
+
+- Concept summary and tech stack with install command
+- Section-by-section scene breakdown with camera movement, object interactions, and lighting directives per scroll range
+- `use-scroll-progress.ts` — ref-based scroll hook (no re-renders)
+- `camera-path.ts` — CatmullRom spline with `CameraRig` R3F component
+- `Scene.tsx` — full Canvas with hero geometry, particle field, lights, environment, and postprocessing
+- `page.tsx` — scroll container + overlay structure
+- `experience.css` — fixed canvas, transparent scroll driver, reduced-motion and mobile rules
+- GLSL displacement shader pair (if `includeShaders: true`)
+- Performance strategy table and mobile fallback code
+
+---
+
 ## Resources Reference
 
 Resources are accessed via the MCP resource system and return ready-to-use content.
@@ -632,6 +686,16 @@ reference://ios-hig           → Apple HIG: navigation, Dynamic Type, safe area
 reference://material-design   → Material Design 3: dynamic color, type scale, motion
 ```
 
+### Phase 6: Immersive 3D (optional)
+
+When the project calls for a cinematic scroll experience rather than a traditional page:
+
+```text
+generate-3d-experience        → Full R3F scene, camera spline, scroll hook, shaders, CSS layout
+```
+
+Pick the style that matches the brand and emotional tone established in the project brief. The output is drop-in ready: copy the files, run `npm install`, and the scene runs.
+
 ---
 
 ## Project Storage
@@ -668,7 +732,10 @@ Briefs are saved as JSON files at `~/.senior-design-director-mcp/projects/`. The
 Yes. Use `update-project-brief` to change specific fields. The server merges the updates into the existing brief without requiring a full re-run.
 
 **Does it generate actual code or just specs?**
-Both. Design system tools return structured specifications that Claude uses to write implementation code. The `template://component/*` resources provide ready-to-use HTML/CSS components you can copy directly.
+Both. Design system tools return structured specifications that Claude uses to write implementation code. The `template://component/*` resources provide ready-to-use HTML/CSS components you can copy directly. The `generate-3d-experience` tool outputs complete, copy-paste-ready TypeScript files.
+
+**The agent skill didn't appear after running the install command — what do I do?**
+The installer first tries the `skills` CLI. If that fails or isn't available, it automatically writes the skill file directly to `~/.claude/skills/senior-design-director/SKILL.md`. Restart your client and the skill should appear. If it still doesn't, run the manual fallback: `npx skills add https://github.com/AbrahamOO/senior-design-director-mcp --skill senior-design-director --yes --global`
 
 **What design stack does it target?**
 The server is stack-agnostic. It outputs design tokens as CSS custom properties, component HTML/CSS, and structured JSON specs that Claude can adapt to React, Vue, Svelte, Webflow, or any other stack.
@@ -683,6 +750,7 @@ Without this server, Claude has no memory of your project between conversations 
 ```text
 src/
 ├── index.ts                   # MCP server, tool/resource registration, request handlers
+├── install.ts                 # One-command installer: detects clients, writes configs, installs skill
 ├── types/
 │   └── index.ts               # ProjectBrief, ColorPalette, DesignSystem, AccessibilityReport, etc.
 ├── tools/
@@ -691,7 +759,8 @@ src/
 │   ├── designSystem.ts        # Typography, spacing, breakpoints, motion, component specs
 │   ├── contentArchitecture.ts # Three-act structure, page architecture, copy guidelines
 │   ├── accessibility.ts       # WCAG compliance checker, checklist
-│   └── performance.ts         # Core Web Vitals analysis, budget guidelines
+│   ├── performance.ts         # Core Web Vitals analysis, budget guidelines
+│   └── immersive3d.ts         # Scroll-driven 3D experience generator (R3F, camera spline, shaders)
 ├── resources/
 │   └── templates.ts           # Component templates and design references
 └── utils/
@@ -734,6 +803,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 - **Accessibility as baseline**: WCAG AA compliance is the floor, not the ceiling
 - **Motion with purpose**: animation guides attention, signals state, and reinforces brand, not decoration
 - **Brief-driven decisions**: every recommendation traces back to who the site is for and what it must accomplish
+- **Depth over decoration**: 3D experiences earn every polygon; geometry serves the narrative
 
 ---
 
