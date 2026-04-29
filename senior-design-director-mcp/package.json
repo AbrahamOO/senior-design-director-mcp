@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "senior-design-director-mcp": "./dist/index.js"
+    "senior-design-director-mcp": "dist/index.js"
   },
   "files": [
     "dist",
@@ -44,7 +44,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AbrahamOO/senior-design-director-mcp.git"
+    "url": "git+https://github.com/AbrahamOO/senior-design-director-mcp.git"
   },
   "bugs": {
     "url": "https://github.com/AbrahamOO/senior-design-director-mcp/issues"
