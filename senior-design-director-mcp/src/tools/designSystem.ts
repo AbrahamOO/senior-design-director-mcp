@@ -7,10 +7,6 @@ import { DesignSystem, MobileTokens, Platform, ProjectBrief } from '../types/ind
 import { briefStorage } from '../utils/storage.js';
 import { generateColorPalette } from './colorPalette.js';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function isMobilePlatform(p: Platform) {
   return p === 'mobile-ios' || p === 'mobile-android' || p === 'mobile-cross-platform';
 }
@@ -20,10 +16,6 @@ function pickByPlatform<T>(platform: Platform, ios: T, android: T, cross: T): T 
   if (platform === 'mobile-android') return android;
   return cross;
 }
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
 
 export function createDesignSystem(projectName: string): {
   success: boolean;
@@ -93,9 +85,6 @@ export function generateComponentLibrary(projectName: string): {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Typography
-// ---------------------------------------------------------------------------
 
 function generateTypographySystem(brief: ProjectBrief, platform: Platform) {
   const tones = new Set(brief.EMOTIONAL_DIRECTION.EMOTIONAL_TONE.map(t => t.toLowerCase()));
@@ -184,9 +173,6 @@ function buildTypeScale(platform: Platform) {
   ];
 }
 
-// ---------------------------------------------------------------------------
-// Spacing
-// ---------------------------------------------------------------------------
 
 function generateSpacingSystem(platform: Platform) {
   if (platform === 'mobile-ios') {
@@ -201,9 +187,6 @@ function generateSpacingSystem(platform: Platform) {
   return { baseUnit: 8, unit: 'px', scale: [4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256] };
 }
 
-// ---------------------------------------------------------------------------
-// Breakpoints (web only)
-// ---------------------------------------------------------------------------
 
 function generateBreakpoints() {
   return [
@@ -216,9 +199,6 @@ function generateBreakpoints() {
   ];
 }
 
-// ---------------------------------------------------------------------------
-// Mobile tokens
-// ---------------------------------------------------------------------------
 
 function generateMobileTokens(platform: Platform, brief: ProjectBrief): MobileTokens {
   const tones = new Set(brief.EMOTIONAL_DIRECTION.EMOTIONAL_TONE.map(t => t.toLowerCase()));
@@ -315,9 +295,6 @@ function buildCrossPlatformTokens(): MobileTokens {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Motion
-// ---------------------------------------------------------------------------
 
 function generateMotionSystem(brief: ProjectBrief, platform: Platform) {
   const tones = new Set(brief.EMOTIONAL_DIRECTION.EMOTIONAL_TONE.map(t => t.toLowerCase()));
@@ -369,9 +346,6 @@ function generateMotionSystem(brief: ProjectBrief, platform: Platform) {
   return { easings, durations };
 }
 
-// ---------------------------------------------------------------------------
-// Web components
-// ---------------------------------------------------------------------------
 
 function buildWebComponents(brief: ProjectBrief): ComponentSpec[] {
   return [
@@ -464,9 +438,6 @@ function buildWebComponents(brief: ProjectBrief): ComponentSpec[] {
   ];
 }
 
-// ---------------------------------------------------------------------------
-// Mobile components — one function per component to keep complexity low
-// ---------------------------------------------------------------------------
 
 type ComponentSpec = { name: string; description: string; variants: string[]; states: string[]; specifications: Record<string, string> };
 

@@ -157,7 +157,8 @@ Rather than answering generic design questions, this MCP server operates like a 
 
 1. **Runs a 15-question discovery session** to capture your audience, brand positioning, narrative arc, CTA strategy, and visual direction
 2. **Saves the project brief** to disk so context persists across every conversation and tool call
-3. **Derives all design decisions from that brief**: color palettes, type systems, content structure, and copy voice all connect back to who the site is for and what it needs to accomplish
+3. **Maps the complete user journey** — entry points, task states, decision forks, friction inventory, error states, and conversion checkpoints, before any visual design begins
+4. **Derives all design decisions from that brief**: color palettes, type systems, content structure, and copy voice all connect back to who the site is for and what it needs to accomplish
 
 ---
 
@@ -391,6 +392,44 @@ Generates specifications for UI components appropriate for the project's platfor
 
 ---
 
+### User Flow Tools
+
+#### `generate-user-flow`
+
+Generates a clinical, structured user flow map grounded in the project brief. Run this immediately after project discovery, before any visual design work begins.
+
+**Required parameters:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `projectName` | string | Project name (must match a saved project brief) |
+
+**Optional parameters:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `journeyGoal` | string | Override the primary journey goal. Defaults to the primary CTA from the project brief. |
+
+**Returns:**
+
+- **Entry points** — all traffic channels with user intent classification and cognitive state
+- **Primary journey** — numbered states (S0–S9) with entry conditions, content visible, cognitive load, and exit triggers
+- **Decision forks** — every branch point with named Yes/No paths and downstream consequences
+- **Friction inventory** — ranked by severity (1–5), with root cause and mitigation per touchpoint
+- **Error & empty states** — trigger, treatment, and recovery path for every failure mode
+- **Conversion checkpoints** — metric, numeric target, and measurement tool per step
+- **Navigation pattern** — platform-native nav structure (iOS HIG / Material 3 / web URL schema)
+
+```json
+{ "projectName": "TechFlow" }
+```
+
+```json
+{ "projectName": "TechFlow", "journeyGoal": "Complete onboarding and activate free trial" }
+```
+
+---
+
 ### Content Architecture Tools
 
 #### `generate-content-architecture`
@@ -565,6 +604,14 @@ All component templates use CSS custom properties (`--color-primary`, `--color-s
 | `reference://ios-hig` | Apple Human Interface Guidelines: NavigationStack/TabBar/Sheet patterns, Dynamic Type scale (11pt–34pt), safe area table (Dynamic Island-aware), SF Symbols usage, spring motion parameters, semantic color tokens, and 8 edge cases |
 | `reference://material-design` | Material Design 3: dynamic color roles, type scale (11sp–57sp), component specs (buttons, Top App Bar, Navigation Bar, Bottom Sheet, Cards), 4dp spacing grid, motion easing curves + duration scale, and 10 edge cases |
 
+### Brand Design Templates
+
+A library of 60+ production design references for world-class brands, organized by industry. Each template contains design system decisions, typography, color, motion, and layout patterns extracted from the brand's public design language.
+
+Brands covered include: Airbnb, Airtable, Apple, Binance, BMW, Bugatti, Cal.com, Claude, Clay, ClickHouse, Cohere, Coinbase, Composio, Cursor, ElevenLabs, Expo, Ferrari, Figma, Framer, HashiCorp, IBM, Intercom, Kraken, Lamborghini, Linear, Lovable, Mastercard, Meta, Minimax, Mintlify, Miro, Mistral, MongoDB, Nike, Notion, NVIDIA, Ollama, OpenCode, Pinterest, PlayStation, PostHog, Raycast, Renault, Replicate, Resend, Revolut, Runway, Sanity, SEMrush, Sentry, Shopify, Slack, SpaceX, Spotify, Starbucks, Stripe, Supabase, Superhuman, Tesla, The Verge, Together.ai, Uber, Vercel, VoltAgent, Vodafone, Warp, Webflow, Wired, Wise, X.ai, and Zapier.
+
+Use these as inspiration references during `complete-project-discovery` by naming them in `aestheticReferences` or `visualInspiration`.
+
 ---
 
 ## End-to-End Workflow
@@ -575,7 +622,19 @@ Run `complete-project-discovery` with all answers. Include `"platform": "mobile-
 
 Use `get-discovery-questions` first if you want to prepare answers in advance. After discovery, use `get-project-brief` to review the saved brief and `update-project-brief` to refine any field without re-running the full discovery.
 
-### Phase 2: Design System
+### Phase 2: User Flow
+
+Run `generate-user-flow` immediately after discovery, before any visual design work. User flow is structural — it defines what gets built. Every screen, component, and content decision in subsequent phases must trace back to a named state in the flow.
+
+```text
+generate-user-flow    → Entry points, numbered states, decision forks,
+                        friction inventory, error states, conversion
+                        checkpoints, platform-native nav pattern
+```
+
+Friction points with severity ≥4 are blockers — resolve them in design before proceeding to Phase 3. Every error state must have a specified recovery path.
+
+### Phase 3: Design System
 
 ```text
 generate-color-palette       → Review primary palette and two alternatives
@@ -586,14 +645,14 @@ generate-component-library   → Platform-native component specs for implementat
 
 For mobile, `create-design-system` emits pt (iOS) or dp (Android) tokens, Dynamic Type / sp scales, and UISpringTimingParameters / Material motion tokens. `generate-component-library` returns SwiftUI/UIKit or Compose/Material 3 component specs.
 
-### Phase 3: Content Strategy
+### Phase 4: Content Strategy
 
 ```text
-generate-content-architecture  → Three-act scroll narrative and page structure
+generate-content-architecture  → Three-act scroll narrative mapped to the states defined in Phase 2
 generate-copy-guidelines       → Voice, vocabulary, headline formulas, CTA copy
 ```
 
-### Phase 4: Quality Assurance
+### Phase 5: Quality Assurance
 
 **Web:**
 
@@ -614,7 +673,7 @@ analyze-mobile-performance   → Cold/warm launch, frame rate, memory, battery a
 get-mobile-performance-targets → iOS and Android benchmark tables
 ```
 
-### Phase 5: Implementation
+### Phase 6: Implementation
 
 **Web:**
 
@@ -689,11 +748,13 @@ src/
 │   ├── projectDiscovery.ts    # Discovery questions, brief builder, storage CRUD
 │   ├── colorPalette.ts        # Palette generation, contrast validation
 │   ├── designSystem.ts        # Typography, spacing, breakpoints, motion, component specs
-│   ├── contentArchitecture.ts # Three-act structure, page architecture, copy guidelines
+│   ├── contentArchitecture.ts # Three-act structure, user flow, page architecture, copy guidelines
 │   ├── accessibility.ts       # WCAG compliance checker, checklist
 │   └── performance.ts         # Core Web Vitals analysis, budget guidelines
 ├── resources/
-│   └── templates.ts           # Component templates and design references
+│   ├── templates.ts           # Component templates and design references
+│   └── designTemplates.ts     # Brand design template library (60+ brands)
+├── templates/                 # Markdown brand design reference files
 └── utils/
     └── storage.ts             # File-based persistent storage for project briefs
 ```

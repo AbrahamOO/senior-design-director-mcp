@@ -26,6 +26,7 @@ import { createDesignSystem, generateComponentLibrary } from './tools/designSyst
 import {
   generateContentArchitecture,
   generateCopyGuidelines,
+  generateUserFlow,
 } from './tools/contentArchitecture.js';
 import { checkAccessibility, getAccessibilityChecklist } from './tools/accessibility.js';
 import {
@@ -63,8 +64,6 @@ const server = new McpServer(
   }
 );
 
-// ─── Shared schema fragments ───────────────────────────────────────────────
-
 const platformEnum = z.enum([
   'web',
   'mobile-ios',
@@ -79,8 +78,6 @@ const mobilePlatformEnum = z.enum([
   'mobile-cross-platform',
   'both',
 ]);
-
-// ─── Tools ────────────────────────────────────────────────────────────────
 
 server.registerTool(
   'complete-project-discovery',
@@ -291,6 +288,25 @@ server.registerTool(
   (args) => {
     const result = generateCopyGuidelines(args.projectName);
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.registerTool(
+  'generate-user-flow',
+  {
+    description:
+      'Generate a clinical, structured user flow map — entry points, numbered task states, decision forks, friction inventory, error/empty states, and conversion checkpoints. Platform-aware: produces screen-by-screen mobile flows (iOS HIG / Material 3 navigation patterns) or page-by-page web flows with scroll depth targets. Run after project discovery, before design system. Required before any UI work begins.',
+    inputSchema: {
+      projectName: z.string().describe('Project name (must match a saved project brief)'),
+      journeyGoal: z
+        .string()
+        .optional()
+        .describe('Override the primary journey goal. Defaults to the primary CTA from the project brief.'),
+    },
+  },
+  (args) => {
+    const result = generateUserFlow(args.projectName, args.journeyGoal);
+    return { content: [{ type: 'text', text: result.flow ?? result.message }] };
   }
 );
 
@@ -514,8 +530,6 @@ server.registerTool(
   }
 );
 
-// ─── Resources ────────────────────────────────────────────────────────────
-
 server.registerResource(
   'Project Brief Template',
   'template://project-brief',
@@ -567,8 +581,6 @@ for (const ref of references) {
     })
   );
 }
-
-// ─── Start ────────────────────────────────────────────────────────────────
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

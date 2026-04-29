@@ -84,10 +84,6 @@ function checkSemanticHTML(html: string): { issues: Issue[]; penalty: number } {
   return { issues, penalty };
 }
 
-// ---------------------------------------------------------------------------
-// Mobile accessibility helpers — one concern per function
-// ---------------------------------------------------------------------------
-
 function checkTouchTargets(
   isIOS: boolean, isAndroid: boolean, unit: string, minTarget: number,
   touchTargetSize?: number, minimumTapSpacing?: number

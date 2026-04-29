@@ -26,8 +26,6 @@ export type ExperienceStyle =
 
 export type Framework = 'react-three-fiber' | 'vanilla-threejs';
 
-// ─── Section builders ─────────────────────────────────────────────────────────
-
 function buildSceneBreakdown(concept: string, sections: number, style: ExperienceStyle): string {
   const sectionNames = [
     'Establishing Shot',
@@ -146,8 +144,6 @@ function getLightDirective(index: number, _style: ExperienceStyle): string {
   ];
   return lights[index % lights.length] ?? 'Ambient only';
 }
-
-// ─── Code generators ──────────────────────────────────────────────────────────
 
 function generateCameraSplineCode(sections: number): string {
   return `// camera-path.ts  — CatmullRom spline camera controller

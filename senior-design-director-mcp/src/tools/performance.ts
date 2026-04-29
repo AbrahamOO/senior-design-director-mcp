@@ -6,10 +6,6 @@
 
 import { PerformanceRecommendation, Platform } from '../types/index.js';
 
-// ---------------------------------------------------------------------------
-// Mobile performance helpers — one concern per function
-// ---------------------------------------------------------------------------
-
 function analyzeWarmLaunch(isIOS: boolean, warmLaunchMs?: number): PerformanceRecommendation[] {
   if (warmLaunchMs === undefined || warmLaunchMs <= 400) return [];
   const firstRec = isIOS
