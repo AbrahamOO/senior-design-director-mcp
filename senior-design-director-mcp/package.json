@@ -1,6 +1,6 @@
 {
   "name": "senior-design-director-mcp",
-  "version": "1.3.10",
+  "version": "1.3.11",
   "description": "MCP server for professional design guidance. Works with Claude Code, Cursor, Windsurf, Codex, and any MCP client. Project discovery, design systems, color palettes, accessibility, performance, iOS HIG, and Material Design 3.",
   "type": "module",
   "main": "dist/index.js",
