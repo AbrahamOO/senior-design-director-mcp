@@ -41,6 +41,11 @@ import {
   getProjectBriefTemplate,
   getComponentTemplate,
 } from './resources/templates.js';
+import {
+  listDesignTemplates,
+  listDesignTemplatesByIndustry,
+  getDesignTemplate,
+} from './resources/designTemplates.js';
 import { generateImmersive3DExperience } from './tools/immersive3d.js';
 import { runInstaller } from './install.js';
 
@@ -556,6 +561,47 @@ for (const comp of componentTypes) {
     (_uri) => ({
       contents: [{ uri: `template://component/${comp}`, mimeType: 'text/html', text: getComponentTemplate(comp as any) }],
     })
+  );
+}
+
+// Brand design templates — tool + resources
+server.registerTool(
+  'list-brand-templates',
+  {
+    description: 'List all available brand design templates grouped by industry. Use to discover which brand references are available before loading one with the brand:// resource.',
+    inputSchema: {},
+  },
+  () => {
+    const byIndustry = listDesignTemplatesByIndustry();
+    const lines: string[] = [];
+    for (const [industry, entries] of Object.entries(byIndustry)) {
+      lines.push(`\n### ${industry}`);
+      for (const entry of entries) {
+        lines.push(`- **${entry.name}** — \`brand://${entry.slug}\``);
+      }
+    }
+    return { content: [{ type: 'text', text: lines.join('\n') }] };
+  }
+);
+
+for (const entry of listDesignTemplates()) {
+  server.registerResource(
+    `Brand Template: ${entry.name}`,
+    `brand://${entry.slug}`,
+    {
+      description: `${entry.name} brand design reference — color system, typography, spacing, motion, and UI patterns`,
+      mimeType: 'text/markdown',
+    },
+    (_uri) => {
+      const tpl = getDesignTemplate(entry.slug);
+      return {
+        contents: [{
+          uri: `brand://${entry.slug}`,
+          mimeType: 'text/markdown',
+          text: tpl?.content ?? `Template not found: ${entry.slug}`,
+        }],
+      };
+    }
   );
 }
 

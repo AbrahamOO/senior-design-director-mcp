@@ -625,6 +625,29 @@ Resources are accessed via the MCP resource system and return ready-to-use conte
 
 All component templates use CSS custom properties (`--color-primary`, `--color-secondary`, etc.) that map directly to the generated design system.
 
+### Brand Design Templates
+
+73 real-world brand references covering color systems, typography, spacing, motion, and UI patterns. Use `list-brand-templates` to browse by industry, then load any template as an MCP resource.
+
+```text
+list-brand-templates  → Lists all 73 brands grouped by industry with their resource URIs
+brand://{slug}        → Full design reference for that brand (e.g. brand://stripe, brand://airbnb)
+```
+
+| Industry | Brands |
+| --- | --- |
+| AI & LLM Platforms | Claude, Cohere, ElevenLabs, Minimax, Mistral AI, OpenCode AI, Together AI, xAI |
+| Developer Tools | Cursor, Expo, Raycast, Warp, Ollama, Replicate |
+| Backend & Infrastructure | ClickHouse, HashiCorp, MongoDB, Supabase, Sanity, Resend, Vercel, PostHog, Sentry, Zapier, Composio |
+| Productivity & SaaS | Airtable, Cal, Intercom, Linear, Notion, Superhuman, Slack, Webflow |
+| Design & Creative | Figma, Framer, Lovable, Miro, Runway ML |
+| Fintech & Crypto | Stripe, Binance, Coinbase, Kraken, Mastercard, Revolut, Wise |
+| E-commerce & Retail | Shopify, Starbucks, Nike |
+| Media & Consumer Tech | Apple, Airbnb, Meta, Pinterest, Spotify, The Verge, Wired, Uber |
+| Automotive & Luxury | BMW, BMW M, Bugatti, Ferrari, Lamborghini, Renault, Tesla |
+| Enterprise & Corporate | IBM, NVIDIA, Semrush, Mintlify, Clay, Vodafone, SpaceX, VoltAgent |
+| Gaming & Entertainment | PlayStation |
+
 ### Design Reference Resources
 
 | URI | Description |
