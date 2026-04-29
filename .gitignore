@@ -31,3 +31,8 @@ npm-debug.log*
 
 # Project storage (user-specific project briefs)
 ~/.senior-design-director-mcp/
+
+# Agent session artifacts
+.agent-state.json
+HANDOFF.md
+.mcp/
