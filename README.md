@@ -430,6 +430,26 @@ Returns brand-specific copywriting guidelines derived from the project brief: he
 
 ---
 
+#### `generate-user-flow`
+
+Generates a clinical, structured user flow map before any visual design begins. Platform-aware: produces screen-by-screen mobile flows (iOS HIG / Material 3 navigation patterns) or page-by-page web flows with scroll depth targets.
+
+**Returns:** Entry points, numbered task states, decision forks, friction inventory, error and empty states, and conversion checkpoints — all grounded in the saved project brief.
+
+```json
+{ "projectName": "TechFlow" }
+```
+
+Override the primary journey goal if needed:
+
+```json
+{ "projectName": "TechFlow", "journeyGoal": "Convert trial users to paid plan" }
+```
+
+> Run after `complete-project-discovery`, before `generate-color-palette`. Required before any UI work begins.
+
+---
+
 ### Accessibility Tools
 
 #### `check-accessibility`
@@ -639,6 +659,14 @@ generate-component-library   → Platform-native component specs for implementat
 ```
 
 For mobile, `create-design-system` emits pt (iOS) or dp (Android) tokens, Dynamic Type / sp scales, and UISpringTimingParameters / Material motion tokens. `generate-component-library` returns SwiftUI/UIKit or Compose/Material 3 component specs.
+
+### Phase 2.5: User Flow
+
+```text
+generate-user-flow             → Entry points, task states, decision forks, friction inventory, error states, conversion checkpoints
+```
+
+Run before the design system. Platform-aware — mobile flows follow iOS HIG / Material 3 navigation patterns; web flows include scroll depth targets per page.
 
 ### Phase 3: Content Strategy
 
