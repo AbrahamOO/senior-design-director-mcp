@@ -157,7 +157,7 @@ Rather than answering generic design questions, this MCP server operates like a 
 
 1. **Runs a 15-question discovery session** to capture your audience, brand positioning, narrative arc, CTA strategy, and visual direction
 2. **Saves the project brief** to disk so context persists across every conversation and tool call
-3. **Maps the complete user journey** — entry points, task states, decision forks, friction inventory, error states, and conversion checkpoints, before any visual design begins
+3. **Maps the complete user journey**: entry points, task states, decision forks, friction inventory, error states, and conversion checkpoints, before any visual design begins
 4. **Derives all design decisions from that brief**: color palettes, type systems, content structure, and copy voice all connect back to who the site is for and what it needs to accomplish
 
 ---
@@ -412,13 +412,13 @@ Generates a clinical, structured user flow map grounded in the project brief. Ru
 
 **Returns:**
 
-- **Entry points** — all traffic channels with user intent classification and cognitive state
-- **Primary journey** — numbered states (S0–S9) with entry conditions, content visible, cognitive load, and exit triggers
-- **Decision forks** — every branch point with named Yes/No paths and downstream consequences
-- **Friction inventory** — ranked by severity (1–5), with root cause and mitigation per touchpoint
-- **Error & empty states** — trigger, treatment, and recovery path for every failure mode
-- **Conversion checkpoints** — metric, numeric target, and measurement tool per step
-- **Navigation pattern** — platform-native nav structure (iOS HIG / Material 3 / web URL schema)
+- **Entry points**: all traffic channels with user intent classification and cognitive state
+- **Primary journey**: numbered states (S0-S9) with entry conditions, content visible, cognitive load, and exit triggers
+- **Decision forks**: every branch point with named Yes/No paths and downstream consequences
+- **Friction inventory**: ranked by severity (1-5), with root cause and mitigation per touchpoint
+- **Error & empty states**: trigger, treatment, and recovery path for every failure mode
+- **Conversion checkpoints**: metric, numeric target, and measurement tool per step
+- **Navigation pattern**: platform-native nav structure (iOS HIG / Material 3 / web URL schema)
 
 ```json
 { "projectName": "TechFlow" }
@@ -624,7 +624,7 @@ Use `get-discovery-questions` first if you want to prepare answers in advance. A
 
 ### Phase 2: User Flow
 
-Run `generate-user-flow` immediately after discovery, before any visual design work. User flow is structural — it defines what gets built. Every screen, component, and content decision in subsequent phases must trace back to a named state in the flow.
+Run `generate-user-flow` immediately after discovery, before any visual design work. User flow is structural: it defines what gets built. Every screen, component, and content decision in subsequent phases must trace back to a named state in the flow.
 
 ```text
 generate-user-flow    → Entry points, numbered states, decision forks,
@@ -632,7 +632,7 @@ generate-user-flow    → Entry points, numbered states, decision forks,
                         checkpoints, platform-native nav pattern
 ```
 
-Friction points with severity ≥4 are blockers — resolve them in design before proceeding to Phase 3. Every error state must have a specified recovery path.
+Friction points with severity ≥4 are blockers: resolve them in design before proceeding to Phase 3. Every error state must have a specified recovery path.
 
 ### Phase 3: Design System
 
@@ -715,7 +715,7 @@ Briefs are loaded into memory on server startup and written to disk on every sav
 Yes. Run `npx senior-design-director-mcp install` and it configures both automatically. For manual setup, see the Quick Start sections above.
 
 **Do I need to install anything permanently?**
-No. Run `npx senior-design-director-mcp install` once to configure your clients. After that, the server starts automatically via npx each time your client connects — nothing is permanently installed. Node.js 18 or later is the only prerequisite.
+No. Run `npx senior-design-director-mcp install` once to configure your clients. After that, the server starts automatically via npx each time your client connects. Nothing is permanently installed. Node.js 18 or later is the only prerequisite.
 
 **Does it work with MCP clients other than Claude?**
 Yes. The server uses the standard Model Context Protocol and works with any MCP-compatible client.
