@@ -23,6 +23,18 @@ jobs:
       - name: Verify token identity
         run: npm whoami
 
+      - name: Check token type
+        run: |
+          curl -sf "https://registry.npmjs.org/-/npm/v1/tokens" \
+            -H "Authorization: Bearer $(npm config get //registry.npmjs.org/:_authToken)" | \
+            node -e "
+              let d=''; process.stdin.on('data',c=>d+=c);
+              process.stdin.on('end',()=>{
+                const tokens=(JSON.parse(d).objects||[]);
+                tokens.forEach(t=>console.log('type:',t.type,'| readonly:',t.readonly,'| automation:',t.automation,'| key:',t.token));
+              });
+            "
+
       - name: Install dependencies
         working-directory: senior-design-director-mcp
         run: npm ci
