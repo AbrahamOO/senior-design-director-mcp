@@ -23,25 +23,6 @@ jobs:
       - name: Verify token identity
         run: npm whoami
 
-      - name: Check token type
-        continue-on-error: true
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          curl -sf "https://registry.npmjs.org/-/npm/v1/tokens" \
-            -H "Authorization: Bearer $NPM_TOKEN" | \
-            node -e "
-              let d=''; process.stdin.on('data',c=>d+=c);
-              process.stdin.on('end',()=>{
-                const tokens=(JSON.parse(d).objects||[]);
-                tokens.forEach(t=>{
-                  const prefix=t.token;
-                  const rest={...t}; delete rest.token;
-                  console.log('prefix:',prefix,'|',JSON.stringify(rest));
-                });
-              });
-            "
-
       - name: Install dependencies
         working-directory: senior-design-director-mcp
         run: npm ci
